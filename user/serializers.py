@@ -23,6 +23,7 @@ class MemberRegisterSerializer(serializers.ModelSerializer):
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+
     @classmethod
     def get_token(cls, member):
         token = super().get_token(member)
@@ -33,5 +34,4 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['phone'] = member.phone
         token['role'] = member.role
         return token
-
 
