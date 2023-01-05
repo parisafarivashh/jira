@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework.serializers import ModelSerializer
 
-from .models import Project, Room
+from .models import Project, Room, Message
 
 
 class CreateProjectSerializer(ModelSerializer):
@@ -18,17 +18,25 @@ class CreateProjectSerializer(ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        # ToDo: use celery task for created room and message
+        user = self.context['request'].user
         public_room_id = Room.objects.create(
             title=validated_data['title'],
             type='project',
             private=False,
-            owner=self.context['request'].user
+            owner=user
         )
         private_room_id = Room.objects.create(
             title=validated_data['title'],
             type='project',
             private=True,
-            owner=self.context['request'].user
+            owner=user
+        )
+        Message.objects.create(
+            type='alert',
+            body='Created',
+            sender_id=user,
+            room_id=public_room_id,
         )
 
         validated_data['public_room_id'] = public_room_id
