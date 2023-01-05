@@ -4,7 +4,7 @@ from rest_framework.serializers import ModelSerializer
 from .models import Project, Room, Message
 
 
-class CreateProjectSerializer(ModelSerializer):
+class ProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ['id', 'title', 'description', 'manager_id', 'status',
@@ -42,5 +42,11 @@ class CreateProjectSerializer(ModelSerializer):
         validated_data['public_room_id'] = public_room_id
         validated_data['private_room_id'] = private_room_id
 
-        return super(CreateProjectSerializer, self).create(validated_data)
+        return super(ProjectSerializer, self).create(validated_data)
+
+
+class UpdateProjectSerializer(ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'title', 'description', 'manager_id', 'status']
 

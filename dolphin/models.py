@@ -5,16 +5,22 @@ from maestro.settings import AUTH_USER_MODEL
 Member = AUTH_USER_MODEL
 
 
-class Room(models.Model):
+class BaseClass(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class Room(BaseClass):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255)
     type = models.CharField(max_length=50)
     private = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(
         Member,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='room'
     )
 
@@ -22,7 +28,7 @@ class Room(models.Model):
         db_table = 'room'
 
 
-class Project(models.Model):
+class Project(BaseClass):
 
     class Status(models.TextChoices):
         active = 'active'
@@ -34,7 +40,7 @@ class Project(models.Model):
     description = models.CharField(max_length=255, blank=False, null=False)
     manager_id = models.ForeignKey(
         Member,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='managerProject'
     )
     title = models.CharField(max_length=255, unique=True)
@@ -43,21 +49,19 @@ class Project(models.Model):
         default=Status.active,
         max_length=10
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
     public_room_id = models.ForeignKey(
         Room,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='publicProject'
     )
     private_room_id = models.ForeignKey(
         Room,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='privateProject'
     )
     created_by = models.ForeignKey(
         Member,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='ownerProject'
     )
 
@@ -65,7 +69,7 @@ class Project(models.Model):
         db_table = 'project'
 
 
-class Message(models.Model):
+class Message(BaseClass):
 
     class Type(models.TextChoices):
         message = 'message'
@@ -79,19 +83,34 @@ class Message(models.Model):
     )
     sender_id = models.ForeignKey(
         Member,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='messages'
     )
     room_id = models.ForeignKey(
         Room,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='messages'
     )
     body = models.TextField()
     is_seen = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'message'
+
+
+class MemberMessageSeen(models.Model):
+    id = models.AutoField(primary_key=True)
+    message_id = models.ForeignKey(
+        Message,
+        on_delete=models.PROTECT,
+        related_name='seen'
+    )
+    member_id = models.ForeignKey(
+        Member,
+        on_delete=models.PROTECT,
+        related_name='seenMessages'
+    )
+
+    class Meta:
+        db_table = 'member_message_seen'
 
