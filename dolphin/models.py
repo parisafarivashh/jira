@@ -11,10 +11,11 @@ class Room(models.Model):
     type = models.CharField(max_length=50)
     private = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(
         Member,
         on_delete=models.CASCADE,
-        related_name='owner'
+        related_name='room'
     )
 
     class Meta:
@@ -34,7 +35,7 @@ class Project(models.Model):
     manager_id = models.ForeignKey(
         Member,
         on_delete=models.CASCADE,
-        related_name='manager'
+        related_name='managerProject'
     )
     title = models.CharField(max_length=255, unique=True)
     status = models.CharField(
@@ -43,22 +44,54 @@ class Project(models.Model):
         max_length=10
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
     public_room_id = models.ForeignKey(
         Room,
         on_delete=models.CASCADE,
-        related_name='pubic_room'
+        related_name='publicProject'
     )
     private_room_id = models.ForeignKey(
         Room,
         on_delete=models.CASCADE,
-        related_name='private_room'
+        related_name='privateProject'
     )
     created_by = models.ForeignKey(
         Member,
         on_delete=models.CASCADE,
-        related_name='createdBy'
+        related_name='ownerProject'
     )
 
     class Meta:
         db_table = 'project'
+
+
+class Message(models.Model):
+
+    class Type(models.TextChoices):
+        message = 'message'
+        alert = 'alert'
+
+    id = models.AutoField(primary_key=True)
+    type = models.CharField(
+        max_length=10,
+        default=Type.message,
+        choices=Type.choices
+    )
+    sender_id = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name='messages'
+    )
+    room_id = models.ForeignKey(
+        Room,
+        on_delete=models.CASCADE,
+        related_name='messages'
+    )
+    body = models.TextField()
+    is_seen = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'message'
 

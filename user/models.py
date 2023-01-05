@@ -39,7 +39,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     birth = models.DateField(blank=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    last_modified = models.DateTimeField(auto_now=True)
+    modified_at = models.DateTimeField(auto_now=True)
     is_system = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     country_code = models.CharField(max_length=4, null=True, blank=True)
