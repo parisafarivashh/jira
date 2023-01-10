@@ -1,7 +1,8 @@
 from django.db import transaction
+from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from .models import Project, Room, Message
+from .models import Project, Room, Message, MemberMessageSeen
 
 
 class ProjectSerializer(ModelSerializer):
@@ -49,4 +50,21 @@ class UpdateProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ['id', 'title', 'description', 'manager_id', 'status']
+
+
+class SeenMessageSerializer(ModelSerializer):
+
+    class Meta:
+        model = Message
+        fields = ['id', 'is_seen']
+
+    @transaction.atomic()
+    def update(self, instance, validated_data):
+        MemberMessageSeen.objects.create(
+            member_id=self.context['request'].user,
+            message_id=instance
+        )
+
+        super().update(instance, validated_data)
+        return instance
 

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 
 from maestro.settings import AUTH_USER_MODEL
@@ -13,7 +15,24 @@ class BaseClass(models.Model):
         abstract = True
 
 
-class Room(BaseClass):
+class SoftDelete(models.Model):
+    removed_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+    def soft_delete(self):
+        if self.removed_at is not None:
+            raise ValueError('Object is already deleted.')
+        self.removed_at = datetime.utcnow()
+        self.save()
+
+    def restore(self):
+        self.removed_at = None
+        self.save()
+
+
+class Room(BaseClass, SoftDelete):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255)
     type = models.CharField(max_length=50)
@@ -28,7 +47,7 @@ class Room(BaseClass):
         db_table = 'room'
 
 
-class Project(BaseClass):
+class Project(BaseClass, SoftDelete):
 
     class Status(models.TextChoices):
         active = 'active'
@@ -69,7 +88,7 @@ class Project(BaseClass):
         db_table = 'project'
 
 
-class Message(BaseClass):
+class Message(BaseClass, SoftDelete):
 
     class Type(models.TextChoices):
         message = 'message'
@@ -113,4 +132,10 @@ class MemberMessageSeen(models.Model):
 
     class Meta:
         db_table = 'member_message_seen'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['message_id', 'member_id'],
+                name='unique_member_message_seen',
+            )
+        ]
 

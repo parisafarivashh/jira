@@ -1,13 +1,16 @@
 from rest_framework import status
-from rest_framework.generics import GenericAPIView
+from rest_framework.exceptions import NotFound
+from rest_framework.generics import GenericAPIView, UpdateAPIView
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, \
     UpdateModelMixin, DestroyModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Project
-from .serializers import ProjectSerializer, UpdateProjectSerializer
+from .models import Project, Message
+from .permissions import SeenOwnMessagePermission, SeenPermission
+from .serializers import ProjectSerializer, UpdateProjectSerializer, \
+    SeenMessageSerializer
 
 
 class CreateProjectView(APIView):
@@ -36,7 +39,7 @@ class ProjectView(GenericAPIView, RetrieveModelMixin, ListModelMixin,
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ProjectSerializer
-        elif self.request.method == 'PUT' or self.request.method == 'PATCH':
+        else:
             return UpdateProjectSerializer
 
     def get(self, request, id=None):
@@ -51,11 +54,33 @@ class ProjectView(GenericAPIView, RetrieveModelMixin, ListModelMixin,
     def patch(self, request, id):
         return self.update(request, id, partial=True)
 
-    # def delete(self, request, id=None):
-    #     if id:
-              # bayad har chizi ke be in marbote ham delete beshe
-    #         return self.destroy(request, id)
-    #     else:
-    #         raise NotFound
+    def delete(self, request, id=None):
+        if id:
+            try:
+                Project.objects.get(id=id).soft_delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
+            except Exception as ex:
+                return Response(
+                    data=str(ex), status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            raise NotFound
+
+
+class SeenMessageView(UpdateAPIView):
+    permission_classes = [
+        IsAuthenticated,
+        SeenOwnMessagePermission,
+        SeenPermission
+    ]
+    serializer_class = SeenMessageSerializer
+    queryset = Message.objects.all()
+    lookup_field = 'id'
+
+    def get_serializer_context(self):
+        context = super(SeenMessageView, self).get_serializer_context()
+        context.update({'request': self.request})
+        return context
 
 
