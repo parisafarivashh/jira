@@ -13,6 +13,7 @@ from .serializers import ProjectSerializer, UpdateProjectSerializer, \
     SeenMessageSerializer
 
 
+# region project view
 class CreateProjectView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ProjectSerializer
@@ -66,8 +67,10 @@ class ProjectView(GenericAPIView, RetrieveModelMixin, ListModelMixin,
                 )
         else:
             raise NotFound
+# endregion
 
 
+# region message view
 class SeenMessageView(UpdateAPIView):
     permission_classes = [
         IsAuthenticated,
@@ -82,5 +85,5 @@ class SeenMessageView(UpdateAPIView):
         context = super(SeenMessageView, self).get_serializer_context()
         context.update({'request': self.request})
         return context
-
+# endregion
 

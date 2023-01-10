@@ -5,6 +5,7 @@ from rest_framework.serializers import ModelSerializer
 from .models import Project, Room, Message, MemberMessageSeen
 
 
+# region project serializer
 class ProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
@@ -50,8 +51,10 @@ class UpdateProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ['id', 'title', 'description', 'manager_id', 'status']
+# endregion
 
 
+# region message serializer
 class SeenMessageSerializer(ModelSerializer):
 
     class Meta:
@@ -67,4 +70,5 @@ class SeenMessageSerializer(ModelSerializer):
 
         super().update(instance, validated_data)
         return instance
+# endregion
 
