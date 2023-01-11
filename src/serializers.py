@@ -2,7 +2,7 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from .models import Project, Room, Message, MemberMessageSeen
+from .models import Project, Room, Message, MemberMessageSeen, RoomMember
 
 
 # region project serializer
@@ -39,6 +39,22 @@ class ProjectSerializer(ModelSerializer):
             body='Created',
             sender_id=user,
             room_id=public_room_id,
+        )
+        RoomMember.objects.create(
+            member_id=user,
+            room_id=public_room_id,
+        )
+        RoomMember.objects.create(
+            member_id=user,
+            room_id=private_room_id,
+        )
+        RoomMember.objects.create(
+            member_id=validated_data['manager_id'],
+            room_id=public_room_id,
+        )
+        RoomMember.objects.create(
+            member_id=validated_data['manager_id'],
+            room_id=private_room_id,
         )
 
         validated_data['public_room_id'] = public_room_id
