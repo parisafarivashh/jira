@@ -139,3 +139,29 @@ class MemberMessageSeen(models.Model):
             )
         ]
 
+
+class RoomMember(BaseClass):
+    id = models.AutoField(primary_key=True)
+    room_id = models.ForeignKey(
+        Room, on_delete=models.PROTECT, related_name='room_member'
+    )
+    member_id = models.ForeignKey(
+        Member, on_delete=models.PROTECT, related_name='room_member'
+    )
+    latest_seen_message_id = models.ForeignKey(
+        Message,
+        on_delete=models.PROTECT,
+        related_name='latest_message_room',
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        db_table = 'room_member'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['room_id', 'member_id'],
+                name='unique_room_member',
+            )
+        ]
+
