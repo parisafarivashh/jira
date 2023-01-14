@@ -74,11 +74,14 @@ class SeenMessageSerializer(ModelSerializer):
             member_id=user,
             message_id=instance
         )
-        room_member = RoomMember.objects.get(
-            member_id=user, room_id=instance.room_id
-        )
-        room_member.latest_seen_message_id = instance
-        room_member.save(update_fields=["latest_seen_message_id"])
+        try:
+            room_member = RoomMember.objects.get(
+                member_id=user, room_id=instance.room_id
+            )
+            room_member.latest_seen_message_id = instance
+            room_member.save(update_fields=["latest_seen_message_id"])
+        except RoomMember.DoesNotExist:
+            pass
 
         super().update(instance, validated_data)
         return instance
