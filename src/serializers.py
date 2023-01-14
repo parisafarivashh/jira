@@ -40,22 +40,12 @@ class ProjectSerializer(ModelSerializer):
             sender_id=user,
             room_id=public_room_id,
         )
-        RoomMember.objects.create(
-            member_id=user,
-            room_id=public_room_id,
-        )
-        RoomMember.objects.create(
-            member_id=user,
-            room_id=private_room_id,
-        )
-        RoomMember.objects.create(
-            member_id=validated_data['manager_id'],
-            room_id=public_room_id,
-        )
-        RoomMember.objects.create(
-            member_id=validated_data['manager_id'],
-            room_id=private_room_id,
-        )
+        RoomMember.objects.bulk_create([
+            RoomMember(member_id=user, room_id=public_room_id),
+            RoomMember(member_id=user, room_id=private_room_id),
+            RoomMember(member_id=validated_data['manager_id'], room_id=public_room_id),
+            RoomMember(member_id=validated_data['manager_id'], room_id=private_room_id),
+        ])
 
         validated_data['public_room_id'] = public_room_id
         validated_data['private_room_id'] = private_room_id
