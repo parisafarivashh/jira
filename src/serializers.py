@@ -79,10 +79,16 @@ class SeenMessageSerializer(ModelSerializer):
 
     @transaction.atomic()
     def update(self, instance, validated_data):
+        user = self.context['request'].user
         MemberMessageSeen.objects.create(
-            member_id=self.context['request'].user,
+            member_id=user,
             message_id=instance
         )
+        room_member = RoomMember.objects.get(
+            member_id=user, room_id=instance.room_id
+        )
+        room_member.latest_seen_message_id = instance
+        room_member.save(update_fields=["latest_seen_message_id"])
 
         super().update(instance, validated_data)
         return instance

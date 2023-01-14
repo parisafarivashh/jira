@@ -19,5 +19,6 @@ class SeenPermission(BasePermission):
             message_id=obj.id,
             member_id=request.user
         )
-        if seen is not None:
-            return False
+        if seen.count() == 0:
+            return True
+
