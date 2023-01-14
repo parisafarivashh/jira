@@ -3,6 +3,7 @@ from datetime import datetime
 from django.db import models
 
 from jira.settings import AUTH_USER_MODEL
+from rest_framework.exceptions import NotFound
 
 Member = AUTH_USER_MODEL
 
@@ -45,6 +46,14 @@ class Room(BaseClass, SoftDelete):
 
     class Meta:
         db_table = 'room'
+
+    @staticmethod
+    def get_room_object(room_id):
+        try:
+            room = Room.objects.get(id=room_id)
+        except Room.DoesNotExist:
+            raise NotFound
+        return room
 
 
 class Project(BaseClass, SoftDelete):

@@ -1,18 +1,20 @@
+from django.db import transaction
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import GenericAPIView, UpdateAPIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, \
     UpdateModelMixin, DestroyModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Project, Message
+from .helpers import check_is_room_member
+from .models import Project, Message, Room
 from .permissions import SeenOwnMessagePermission, SeenPermission, \
     EditOwnMessage
 from .serializers import ProjectSerializer, UpdateProjectSerializer, \
-    SeenMessageSerializer, EditMessageSerializer
+    SeenMessageSerializer, EditMessageSerializer, CreateMessageSerializer
 
 
 # region project view
@@ -20,6 +22,7 @@ class CreateProjectView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ProjectSerializer
 
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
             data=request.data,
@@ -118,11 +121,27 @@ class MessageView(viewsets.ModelViewSet):
 
 class SendMessageView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = ''
+    serializer_class = CreateMessageSerializer
 
-    def post(self):
-        pass
+    @transaction.atomic()
+    def post(self, request, *args, **kwargs):
+        room = Room.get_room_object(kwargs['id'])
+        user = request.user
 
+        if room.private is True:
+            if check_is_room_member(room, user) is False:
+                return Response(
+                    dict(detail='You are not member of room'),
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        serializer = self.serializer_class(
+            context={'request': request, 'room_id': room},
+            data=self.request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 # endregion
 
