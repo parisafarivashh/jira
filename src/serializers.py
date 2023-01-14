@@ -61,6 +61,12 @@ class UpdateProjectSerializer(ModelSerializer):
 
 
 # region message serializer
+class EditMessageSerializer(ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ['id', 'body']
+
+
 class SeenMessageSerializer(ModelSerializer):
 
     class Meta:

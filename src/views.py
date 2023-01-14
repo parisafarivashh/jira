@@ -1,4 +1,5 @@
-from rest_framework import status
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import GenericAPIView, UpdateAPIView
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, \
@@ -8,9 +9,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Project, Message
-from .permissions import SeenOwnMessagePermission, SeenPermission
+from .permissions import SeenOwnMessagePermission, SeenPermission, \
+    EditOwnMessage
 from .serializers import ProjectSerializer, UpdateProjectSerializer, \
-    SeenMessageSerializer
+    SeenMessageSerializer, EditMessageSerializer
 
 
 # region project view
@@ -71,19 +73,56 @@ class ProjectView(GenericAPIView, RetrieveModelMixin, ListModelMixin,
 
 
 # region message view
-class SeenMessageView(UpdateAPIView):
-    permission_classes = [
-        IsAuthenticated,
-        SeenOwnMessagePermission,
-        SeenPermission
-    ]
-    serializer_class = SeenMessageSerializer
+class MessageView(viewsets.ModelViewSet):
     queryset = Message.objects.all()
-    lookup_field = 'id'
+
+    @action(detail=True, url_path='see', methods=['patch'],
+            serializer_class=SeenMessageSerializer)
+    def see(self, request, pk=None):
+        instance = self.get_object()
+        serializer = self.get_serializer(data=request.data, instance=instance)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, url_path='edit', methods=['patch'],
+            serializer_class=EditMessageSerializer)
+    def edit(self, request, pk=None):
+        instance = self.get_object()
+        serializer = self.get_serializer(data=request.data, instance=instance)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get_permissions(self):
+        if self.action == 'see':
+            permission_classes = [
+                IsAuthenticated,
+                SeenOwnMessagePermission,
+                SeenPermission
+            ]
+        elif self.action == 'edit':
+            permission_classes = [
+                IsAuthenticated,
+                EditOwnMessage,
+            ]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
     def get_serializer_context(self):
-        context = super(SeenMessageView, self).get_serializer_context()
+        context = super(MessageView, self).get_serializer_context()
         context.update({'request': self.request})
         return context
+
+
+class SendMessageView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ''
+
+    def post(self):
+        pass
+
+
 # endregion
 

@@ -22,3 +22,11 @@ class SeenPermission(BasePermission):
         if seen.count() == 0:
             return True
 
+
+class EditOwnMessage(BasePermission):
+    message = 'Can Not Edit Message'
+
+    def has_object_permission(self, request, view, obj):
+        if obj.sender_id == request.user:
+            return True
+
