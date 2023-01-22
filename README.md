@@ -11,6 +11,7 @@
   - [x] The user could seen message --> if member is a member of room then latest-seen-message updated 
   - [x] API crude project
   - [x] Used extra action of ViewSets (Added Custom endpoint to seen message and edit message)
+  - [x] Send message --> when sending a message to the room... previous messages are seen
   
  - models:
    - [x] member --> used BaseUserManager 
