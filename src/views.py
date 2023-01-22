@@ -1,20 +1,22 @@
 from django.db import transaction
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, \
     UpdateModelMixin, DestroyModelMixin
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .designPattern.message import MessageFacade, MessageFactory
-from .models import Project, Message, Room, RoomMember
+from .helpers import check_room_member
+from .models import Project, Message, Room
 from .permissions import SeenOwnMessagePermission, SeenPermission, \
     EditOwnMessage
 from .serializers import ProjectSerializer, UpdateProjectSerializer, \
-    SeenMessageSerializer, EditMessageSerializer, CreateMessageSerializer
+    SeenMessageSerializer, EditMessageSerializer, MessageSerializer
 
 
 # region project view
@@ -113,31 +115,25 @@ class MessageView(viewsets.ModelViewSet):
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
 
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return MessageSerializer
+
     def get_serializer_context(self):
         context = super(MessageView, self).get_serializer_context()
         context.update({'request': self.request})
         return context
 
 
-class SendMessageView(APIView):
+class ListAndSendMessageView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = CreateMessageSerializer
+    serializer_class = MessageSerializer
 
     @transaction.atomic()
     def post(self, request, *args, **kwargs):
         room = Room.get_room_object(kwargs['id'])
-        user = request.user
-        room_member = RoomMember.objects.get(
-            room_id=room,
-            member_id=user,
-        )
 
-        if room.private is True:
-            if room_member is None:
-                return Response(
-                    dict(detail='You are not member of room'),
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        check_room_member(room, request.user)
 
         serializer = self.serializer_class(
             context={'request': request, 'room_id': room},
@@ -155,6 +151,21 @@ class SendMessageView(APIView):
         ).send_message()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get(self, request, *args, **kwargs):
+        room = Room.get_room_object(kwargs['id'])
+        check_room_member(room, request.user)
+
+        queryset = Message.objects.filter(room_id=room)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 # endregion
 

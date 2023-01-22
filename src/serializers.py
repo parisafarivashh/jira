@@ -61,7 +61,7 @@ class UpdateProjectSerializer(ModelSerializer):
 
 
 # region message serializer
-class CreateMessageSerializer(ModelSerializer):
+class MessageSerializer(ModelSerializer):
 
     class Meta:
         model = Message
@@ -79,7 +79,7 @@ class CreateMessageSerializer(ModelSerializer):
         validated_data['room_id'] = room_id
         validated_data['type'] = 'message'
         validated_data['sender_id'] = user
-        return super(CreateMessageSerializer, self).create(validated_data)
+        return super(MessageSerializer, self).create(validated_data)
 
 
 class EditMessageSerializer(ModelSerializer):
