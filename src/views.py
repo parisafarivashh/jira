@@ -9,8 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .helpers import check_is_room_member
-from .models import Project, Message, Room
+from .designPattern.message import MessageFacade, MessageFactory
+from .models import Project, Message, Room, RoomMember
 from .permissions import SeenOwnMessagePermission, SeenPermission, \
     EditOwnMessage
 from .serializers import ProjectSerializer, UpdateProjectSerializer, \
@@ -127,9 +127,13 @@ class SendMessageView(APIView):
     def post(self, request, *args, **kwargs):
         room = Room.get_room_object(kwargs['id'])
         user = request.user
+        room_member = RoomMember.objects.get(
+            room_id=room,
+            member_id=user,
+        )
 
         if room.private is True:
-            if check_is_room_member(room, user) is False:
+            if room_member is None:
                 return Response(
                     dict(detail='You are not member of room'),
                     status=status.HTTP_400_BAD_REQUEST
@@ -141,6 +145,15 @@ class SendMessageView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        message = MessageFactory().get_message(serializer.data['id'])
+
+        MessageFacade(
+            message=message,
+            room=room,
+            user=request.user
+        ).send_message()
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 # endregion
