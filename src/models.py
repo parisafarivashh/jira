@@ -182,3 +182,91 @@ class RoomMember(BaseClass):
             )
         ]
 
+
+class Task(BaseClass, SoftDelete):
+
+    class Status(models.TextChoices):
+        to_do = 'toDo'
+        assign = 'assign'
+        in_progress = 'inProgress'
+        done = 'done'
+
+    id = models.AutoField(primary_key=True)
+    status = models.CharField(
+        choices=Status.choices,
+        default=Status.to_do,
+        max_length=12,
+    )
+    title = models.CharField(unique=True, max_length=100)
+    project_id = models.ForeignKey(
+        Project,
+        on_delete=models.PROTECT,
+        related_name='tasks',
+    )
+    public_room_id = models.ForeignKey(
+        Room,
+        on_delete=models.PROTECT,
+        related_name='publicRoomTask'
+    )
+    private_room_id = models.ForeignKey(
+        Room,
+        on_delete=models.PROTECT,
+        related_name='privateRoomTask'
+    )
+    manager_id = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name='managerTask'
+    )
+    created_by_id = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name='createdTask'
+    )
+
+    class Meta:
+        db_table = 'task'
+
+
+class Assignment(BaseClass, SoftDelete):
+    class Status(models.TextChoices):
+        assign = 'assign'
+        in_progress = 'inProgress'
+        done = 'done'
+
+    id = models.AutoField(primary_key=True)
+    description = models.CharField(
+        unique=True,
+        max_length=250,
+        blank=True,
+        null=True
+    )
+    member_id = models.ForeignKey(
+        Member,
+        on_delete=models.PROTECT,
+        related_name='assignment'
+    )
+    public_room_id = models.ForeignKey(
+        Room,
+        on_delete=models.PROTECT,
+        related_name='publicRoomAssignment'
+    )
+    private_room_id = models.ForeignKey(
+        Room,
+        on_delete=models.PROTECT,
+        related_name='privateRoomAssignment'
+    )
+    status = models.CharField(
+        choices=Status.choices,
+        default=Status.assign,
+        max_length=12,
+    )
+    task_id = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name='assignments'
+    )
+
+    class Meta:
+        db_table = 'assignment'
+

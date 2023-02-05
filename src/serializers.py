@@ -113,7 +113,6 @@ class SeenMessageSerializer(ModelSerializer):
 
         super().update(instance, validated_data)
         return instance
-# endregion
 
 
 class MemberMessageSeenSerializer(ModelSerializer):
@@ -121,4 +120,7 @@ class MemberMessageSeenSerializer(ModelSerializer):
     class Meta:
         model = MemberMessageSeen
         fields = ['id', 'member_id', 'message_id']
+
+# endregion
+
 

@@ -12,6 +12,8 @@
      - [x] room-member
      - [x] message
      - [x] messageMemberSeen
+     - [x] task
+     - [x] assignment
 
 
 
