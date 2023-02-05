@@ -26,5 +26,6 @@
   - [x] bulky-create with ignore_conflicts
   - [x] custom pagination and LimitOffsetPagination
   - [x] django_filters used to get list unread messages
+  - [x] list members who seen the message 
  
  

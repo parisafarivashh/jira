@@ -12,11 +12,12 @@ from rest_framework.views import APIView
 
 from .designPattern.message import MessageFacade, MessageFactory
 from .helpers import check_room_member
-from .models import Project, Message, Room
+from .models import Project, Message, Room, MemberMessageSeen
 from .permissions import SeenOwnMessagePermission, SeenPermission, \
     EditOwnMessage
 from .serializers import ProjectSerializer, UpdateProjectSerializer, \
-    SeenMessageSerializer, EditMessageSerializer, MessageSerializer
+    SeenMessageSerializer, EditMessageSerializer, MessageSerializer, \
+    MemberMessageSeenSerializer
 
 
 # region project view
@@ -171,4 +172,22 @@ class ListAndSendMessageView(generics.ListCreateAPIView):
 
 
 # endregion
+
+class ListMemberSeenMessageView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MemberMessageSeenSerializer
+
+    def get(self, request, *args, **kwargs):
+        message = Message.get_message_object(kwargs['id'])
+
+        queryset = MemberMessageSeen.objects.filter(message_id=message.id)
+        queryset = self.filter_queryset(queryset)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 

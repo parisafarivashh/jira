@@ -115,3 +115,10 @@ class SeenMessageSerializer(ModelSerializer):
         return instance
 # endregion
 
+
+class MemberMessageSeenSerializer(ModelSerializer):
+
+    class Meta:
+        model = MemberMessageSeen
+        fields = ['id', 'member_id', 'message_id']
+

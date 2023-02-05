@@ -125,6 +125,14 @@ class Message(BaseClass, SoftDelete):
     class Meta:
         db_table = 'message'
 
+    @staticmethod
+    def get_message_object(message_id):
+        try:
+            message = Message.objects.get(id=message_id)
+        except Message.DoesNotExist:
+            raise NotFound
+        return message
+
 
 class MemberMessageSeen(models.Model):
     id = models.AutoField(primary_key=True)
