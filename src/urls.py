@@ -12,7 +12,7 @@ urlpatterns = [
     path('project', CreateProjectView.as_view(), name='create_project'),
     path('project/<int:id>', ProjectView.as_view(), name='update_or_delete_project'),
     path('project/all', ProjectView.as_view(), name='list_project'),
-    path('room/<int:id>/message', ListAndSendMessageView.as_view(), name='send_message'),
+    path('room/<int:id>/message', ListAndSendMessageView.as_view(), name='send_or_list_message'),
     path('', include(router.urls)),
 ]
 

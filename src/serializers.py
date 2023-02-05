@@ -65,11 +65,12 @@ class MessageSerializer(ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ['id', 'body', 'room_id', 'type', 'sender_id']
+        fields = ['id', 'body', 'room_id', 'type', 'sender_id', 'is_seen']
         extra_kwargs = {
             'room_id': {'read_only': True},
             'type': {'read_only': True},
             'sender_id': {'read_only': True},
+            'is_seen': {'read_only': True},
         }
 
     def create(self, validated_data):

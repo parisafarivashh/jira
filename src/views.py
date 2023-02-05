@@ -1,11 +1,11 @@
 from django.db import transaction
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, \
     UpdateModelMixin, DestroyModelMixin
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -128,6 +128,8 @@ class MessageView(viewsets.ModelViewSet):
 class ListAndSendMessageView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MessageSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['is_seen']
 
     @transaction.atomic()
     def post(self, request, *args, **kwargs):
@@ -157,6 +159,7 @@ class ListAndSendMessageView(generics.ListCreateAPIView):
         check_room_member(room, request.user)
 
         queryset = Message.objects.filter(room_id=room)
+        queryset = self.filter_queryset(queryset)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
