@@ -25,5 +25,6 @@
   - [x] Used extra action of ViewSets (Added Custom endpoint to seen message and edit message)
   - [x] bulky-create with ignore_conflicts
   - [x] custom pagination and LimitOffsetPagination
+  - [x] django_filters used to get list unread messages
  
  
