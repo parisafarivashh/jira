@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import django
 from django.db import models
 
 from jira.settings import AUTH_USER_MODEL
@@ -218,7 +219,7 @@ class Task(BaseClass, SoftDelete):
         on_delete=models.CASCADE,
         related_name='managerTask'
     )
-    created_by_id = models.ForeignKey(
+    created_by = models.ForeignKey(
         Member,
         on_delete=models.CASCADE,
         related_name='createdTask'
@@ -226,6 +227,10 @@ class Task(BaseClass, SoftDelete):
 
     class Meta:
         db_table = 'task'
+
+    # def update_status(self):
+    #     status = Assignment.objects.filter(task_id=self.id).value('status')
+    #     print(status)
 
 
 class Assignment(BaseClass, SoftDelete):
@@ -266,6 +271,9 @@ class Assignment(BaseClass, SoftDelete):
         on_delete=models.CASCADE,
         related_name='assignments'
     )
+    start_date = models.DateTimeField(blank=False, null=False)
+    end_date = models.DateTimeField(blank=False, null=False)
+    estimate_hours = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'assignment'

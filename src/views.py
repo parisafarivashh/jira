@@ -12,12 +12,12 @@ from rest_framework.views import APIView
 
 from .designPattern.message import MessageFacade, MessageFactory
 from .helpers import check_room_member
-from .models import Project, Message, Room, MemberMessageSeen
+from .models import Project, Message, Room, MemberMessageSeen, Task
 from .permissions import SeenOwnMessagePermission, SeenPermission, \
     EditOwnMessage
 from .serializers import ProjectSerializer, UpdateProjectSerializer, \
     SeenMessageSerializer, EditMessageSerializer, MessageSerializer, \
-    MemberMessageSeenSerializer
+    MemberMessageSeenSerializer, TaskSerializer
 
 
 # region project view
@@ -171,8 +171,6 @@ class ListAndSendMessageView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# endregion
-
 class ListMemberSeenMessageView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MemberMessageSeenSerializer
@@ -190,4 +188,22 @@ class ListMemberSeenMessageView(generics.ListAPIView):
 
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+# endregion
+
+
+class CreateTask(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TaskSerializer
+    queryset = Task.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(created_by=request.user)
+
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 

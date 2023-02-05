@@ -2,10 +2,11 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .views import CreateProjectView, ProjectView, ListAndSendMessageView, \
-    MessageView, ListMemberSeenMessageView
+    MessageView, ListMemberSeenMessageView, CreateTask
 
 router = DefaultRouter()
 router.register('message', MessageView, basename='messageView')
+router.register('task', CreateTask, basename='taskView')
 
 
 urlpatterns = [
