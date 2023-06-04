@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
+    'django_celery_results',
 
     'src',
     'user',
@@ -175,3 +176,8 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+# Celery settings
+CELERY_BROKER_URL = 'amqp://myuser:mypassword@localhost:5672/myvhost'
+CELERY_RESULT_BACKEND = 'django-db'
+

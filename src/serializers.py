@@ -4,6 +4,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.serializers import ModelSerializer
 
 from .models import Project, Room, Message, MemberMessageSeen, RoomMember, Task
+from .tasks import create_room_member
 
 
 # region project serializer
@@ -165,18 +166,8 @@ class TaskSerializer(serializers.ModelSerializer):
         validated_data['public_room_id'] = public_room_id
         validated_data['private_room_id'] = private_room_id
 
-        RoomMember.objects.bulk_create([
-            RoomMember(member_id=user, room_id=public_room_id),
-            RoomMember(member_id=user, room_id=private_room_id),
-            RoomMember(
-                member_id=validated_data['manager_id'],
-                room_id=public_room_id
-            ),
-            RoomMember(
-                member_id=validated_data['manager_id'],
-                room_id=private_room_id
-            ),
-        ], ignore_conflicts=True)
+        create_room_member.delay(user.id, validated_data['manager_id'].id,
+                                 public_room_id.id, private_room_id.id)
 
         return super(TaskSerializer, self).create(validated_data)
 
