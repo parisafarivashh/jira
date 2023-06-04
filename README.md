@@ -35,8 +35,11 @@
 - [x] ------------------------------------------------------------------------------------
    
   - [x] create/list/update tasks
- 
+  - [x] create/list/update assignment
+
  
  - [x] Implemented celery-task 
+ - [x] Used Signals post-save for update status of assignment
+ 
 
  
