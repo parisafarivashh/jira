@@ -139,7 +139,6 @@ class TaskSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        # ToDo: use celery task
         user = self.context['request'].user
         validated_data['created_by'] = user
         validated_data['manager_id'] = validated_data['project_id'].manager_id

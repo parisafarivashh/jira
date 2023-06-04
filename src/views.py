@@ -196,6 +196,7 @@ class CreateTask(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
     queryset = Task.objects.all()
+    lookup_field = 'id'
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(
@@ -206,4 +207,10 @@ class CreateTask(viewsets.ModelViewSet):
         serializer.save(created_by=request.user)
 
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+
+    def get_queryset(self):
+        return Task.objects.filter(manager_id=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        return super().update(request, partial=True)
 
