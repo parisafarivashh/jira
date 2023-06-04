@@ -1,9 +1,12 @@
+from datetime import datetime
+
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.serializers import ModelSerializer
 
-from .models import Project, Room, Message, MemberMessageSeen, RoomMember, Task
+from .models import Project, Room, Message, MemberMessageSeen, RoomMember, \
+    Task, Assignment
 from .tasks import create_room_member
 
 
@@ -21,7 +24,6 @@ class ProjectSerializer(ModelSerializer):
         }
 
     def create(self, validated_data):
-        # ToDo: use celery task for created room and message
         user = self.context['request'].user
         public_room_id = Room.objects.create(
             title=validated_data['title'],
@@ -41,12 +43,11 @@ class ProjectSerializer(ModelSerializer):
             sender_id=user,
             room_id=public_room_id,
         )
-        RoomMember.objects.bulk_create([
-            RoomMember(member_id=user, room_id=public_room_id),
-            RoomMember(member_id=user, room_id=private_room_id),
-            RoomMember(member_id=validated_data['manager_id'], room_id=public_room_id),
-            RoomMember(member_id=validated_data['manager_id'], room_id=private_room_id),
-        ])
+
+        manager_id = validated_data['manager_id'].id
+        create_room_member.delay(
+            user.id, public_room_id.id, private_room_id.id, manager_id
+        )
 
         validated_data['public_room_id'] = public_room_id
         validated_data['private_room_id'] = private_room_id
@@ -121,10 +122,10 @@ class MemberMessageSeenSerializer(ModelSerializer):
     class Meta:
         model = MemberMessageSeen
         fields = ['id', 'member_id', 'message_id']
-
 # endregion
 
 
+# region Task serializer
 class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -165,8 +166,56 @@ class TaskSerializer(serializers.ModelSerializer):
         validated_data['public_room_id'] = public_room_id
         validated_data['private_room_id'] = private_room_id
 
-        create_room_member.delay(user.id, validated_data['manager_id'].id,
-                                 public_room_id.id, private_room_id.id)
+        manager_id = validated_data['manager_id'].id
+        create_room_member.delay(
+            user.id, public_room_id.id, private_room_id.id, manager_id
+        )
 
         return super(TaskSerializer, self).create(validated_data)
+# endregion
 
+
+# region Assignment serializer
+class AssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assignment
+        fields = ['id', 'member_id', 'task_id', 'status',
+                  'public_room_id', 'private_room_id', 'created_by']
+        extra_kwargs = {
+            'status': {'read_only': True},
+            'public_room_id': {'read_only': True},
+            'private_room_id': {'read_only': True},
+            'created_by': {'read_only': True},
+        }
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['created_by'] = user
+
+        task_id = validated_data['task_id']
+
+        validated_data['public_room_id'] = task_id.public_room_id
+        validated_data['private_room_id'] = task_id.private_room_id
+
+        create_room_member.delay(user.id, task_id.public_room_id.id,
+                                 task_id.private_room_id.id)
+
+        return super(AssignmentSerializer, self).create(validated_data)
+
+
+class AssignmentUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Assignment
+        fields = ['id', 'start_date', 'end_date', 'estimate_hours', 'status']
+        extra_kwargs = {'status': {'read_only': True}}
+
+    def validate(self, attrs):
+        if attrs['start_date'].date() < datetime.today().date() or \
+                attrs['end_date'].date() < datetime.today().date():
+
+            raise ValidationError(
+                detail={"error": 'date must be more than today'}
+            )
+        return attrs
+# endregion

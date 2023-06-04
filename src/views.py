@@ -12,12 +12,13 @@ from rest_framework.views import APIView
 
 from .designPattern.message import MessageFacade, MessageFactory
 from .helpers import check_room_member
-from .models import Project, Message, Room, MemberMessageSeen, Task
+from .models import Project, Message, Room, MemberMessageSeen, Task, Assignment
 from .permissions import SeenOwnMessagePermission, SeenPermission, \
-    EditOwnMessage
+    EditOwnMessage, EditOwnAssignment
 from .serializers import ProjectSerializer, UpdateProjectSerializer, \
     SeenMessageSerializer, EditMessageSerializer, MessageSerializer, \
-    MemberMessageSeenSerializer, TaskSerializer
+    MemberMessageSeenSerializer, TaskSerializer, AssignmentSerializer, \
+    AssignmentUpdateSerializer
 
 
 # region project view
@@ -192,7 +193,7 @@ class ListMemberSeenMessageView(generics.ListAPIView):
 # endregion
 
 
-class CreateTask(viewsets.ModelViewSet):
+class TaskView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
     queryset = Task.objects.all()
@@ -210,6 +211,36 @@ class CreateTask(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Task.objects.filter(manager_id=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        return super().update(request, partial=True)
+
+
+class AssignmentView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AssignmentSerializer
+    queryset = Assignment.objects.all()
+    lookup_field = 'id'
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(created_by=request.user)
+
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+
+    def get_queryset(self):
+        return Assignment.objects.filter(member_id=self.request.user)
+
+
+class AssignmentUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated, EditOwnAssignment]
+    serializer_class = AssignmentUpdateSerializer
+    queryset = Assignment.objects.all()
+    lookup_field = 'id'
 
     def update(self, request, *args, **kwargs):
         return super().update(request, partial=True)

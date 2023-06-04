@@ -12,21 +12,26 @@ from jira.celery import celery_app
     autoretry_for=(Exception,),
     name='Create_room_member',
 )
-def create_room_member(user_id, manager_id, public_room_id, private_room_id):
+def create_room_member(user_id, public_room_id, private_room_id,
+                       manager_id=None):
     try:
         private_room = Room.objects.get(id=private_room_id)
         public_room = Room.objects.get(id=public_room_id)
 
         user = Member.objects.get(id=user_id)
-        manager = Member.objects.get(id=manager_id)
+        if manager_id is not None:
+            manager = Member.objects.get(id=manager_id)
+            RoomMember.objects.bulk_create([
+                RoomMember(member_id=manager, room_id=public_room),
+                RoomMember(member_id=manager, room_id=private_room),
+            ], ignore_conflicts=True)
+
+        RoomMember.objects.bulk_create([
+            RoomMember(member_id=user, room_id=public_room),
+            RoomMember(member_id=user, room_id=private_room),
+        ], ignore_conflicts=True)
 
     except Exception:
         raise NotFound()
 
-    RoomMember.objects.bulk_create([
-        RoomMember(member_id=user, room_id=public_room),
-        RoomMember(member_id=user, room_id=private_room),
-        RoomMember(member_id=manager, room_id=public_room),
-        RoomMember(member_id=manager, room_id=private_room),
-    ], ignore_conflicts=True)
 

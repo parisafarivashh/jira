@@ -30,3 +30,10 @@ class EditOwnMessage(BasePermission):
         if obj.sender_id == request.user:
             return True
 
+
+class EditOwnAssignment(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if obj.member_id == request.user:
+            return True
+

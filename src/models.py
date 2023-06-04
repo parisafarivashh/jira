@@ -2,6 +2,8 @@ from datetime import datetime
 
 import django
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from jira.settings import AUTH_USER_MODEL
 from rest_framework.exceptions import NotFound
@@ -240,12 +242,6 @@ class Assignment(BaseClass, SoftDelete):
         done = 'done'
 
     id = models.AutoField(primary_key=True)
-    description = models.CharField(
-        unique=True,
-        max_length=250,
-        blank=True,
-        null=True
-    )
     member_id = models.ForeignKey(
         Member,
         on_delete=models.PROTECT,
@@ -271,10 +267,27 @@ class Assignment(BaseClass, SoftDelete):
         on_delete=models.CASCADE,
         related_name='assignments'
     )
-    start_date = models.DateTimeField(blank=False, null=False)
-    end_date = models.DateTimeField(blank=False, null=False)
+    created_by = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name='createdAssignment'
+    )
+    start_date = models.DateTimeField(blank=True, null=True)
+    end_date = models.DateTimeField(blank=True, null=True)
     estimate_hours = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'assignment'
 
+
+@receiver(post_save, sender=Assignment)
+def update_status_assignment(sender, instance=None, created=False, **kwargs):
+    if instance.end_date.date() == datetime.today().date() and \
+            instance.estimate_hours > 0:
+        Assignment.objects.filter(id=instance.id).update(status='Complete')
+
+    if instance.estimate_hours > 0:
+        Assignment.objects.filter(id=instance.id).update(status='InProgres')
+
+    else:
+        Assignment.objects.filter(id=instance.id).update(status='ToDo')
