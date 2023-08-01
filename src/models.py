@@ -282,8 +282,8 @@ class Assignment(BaseClass, SoftDelete):
 
 @receiver(post_save, sender=Assignment)
 def update_status_assignment(sender, instance=None, created=False, **kwargs):
-    if instance.end_date.date() == datetime.today().date() and \
-            instance.estimate_hours > 0:
+    if instance.estimate_hours > 0 and instance.end_date is not None and \
+            instance.end_date.date() == datetime.today().date():
         Assignment.objects.filter(id=instance.id).update(status='Complete')
 
     if instance.estimate_hours > 0:
