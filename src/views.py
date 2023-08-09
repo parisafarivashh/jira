@@ -1,5 +1,6 @@
 from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import status, viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
@@ -12,13 +13,15 @@ from rest_framework.views import APIView
 
 from .designPattern.message import MessageFacade, MessageFactory
 from .helpers import check_room_member
-from .models import Project, Message, Room, MemberMessageSeen, Task, Assignment
+from .models import Project, Message, Room, MemberMessageSeen, Task, \
+    Assignment
 from .permissions import SeenOwnMessagePermission, SeenPermission, \
     EditOwnMessage, EditOwnAssignment
 from .serializers import ProjectSerializer, UpdateProjectSerializer, \
     SeenMessageSerializer, EditMessageSerializer, MessageSerializer, \
     MemberMessageSeenSerializer, TaskSerializer, AssignmentSerializer, \
     AssignmentUpdateSerializer
+from .tasks import summary_room
 
 
 # region project view
@@ -244,4 +247,12 @@ class AssignmentUpdateView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         return super().update(request, partial=True)
+
+
+class RoomSummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, id=None):
+        summary_room.delay(request.user, id)
+        return Response(status=status.HTTP_200_OK)
 
