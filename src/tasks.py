@@ -1,15 +1,19 @@
+import environ
+
 from django.db import transaction
-from langchain import LLMChain
-from langchain.chains import StuffDocumentsChain
-from langchain.chat_models import ChatOpenAI
+from langchain import schema, chat_models
 from rest_framework.exceptions import NotFound
 
 from .designPattern.message import MessageFacade
 from .models import RoomMember, Room, Message
 
-from .models import Member
-from ..jira import celery_app
-from ..jira.tasks import MyTask
+from jira import celery_app
+from jira.tasks import MyTask
+from user.models import Member
+
+
+env = environ.Env()
+environ.Env.read_env()
 
 
 @celery_app.task(
@@ -43,13 +47,15 @@ def create_room_member(user_id, public_room_id, private_room_id,
 
 @celery_app.task(
     base=MyTask,
-    autoretry_for=(Exception,),
     name='Summary_room',
 )
 @transaction.atomic
-def summary_room(current_user, room_id=None):
-    messages = Message.objects.filter(room_id=room_id).all()
-    user_bot = Member.objects.get_or_create(
+def summary_room(current_user_id, room_id=None):
+    messages = Message.objects.filter(room_id=room_id) \
+                .values_list('body', flat=True)
+
+    summary_message = 'No messages for summary'
+    user_bot, created = Member.objects.get_or_create(
         title='bot',
         first_name='bot',
         email='bot@gmail.com',
@@ -65,38 +71,37 @@ def summary_room(current_user, room_id=None):
               and contain the essential information from conversation.
             """
 
-        # Define LLM chain
-        llm = ChatOpenAI(
+        chat = chat_models.ChatOpenAI(
+            openai_api_key=env("API_KEY_AI"),
             temperature=0,
-            model_name="gpt-3.5-turbo-16k",
-            openai_api_key='openai_api.key',
+            model='gpt-3.5-turbo-16k',
         )
-        llm_chain = LLMChain(llm=llm, prompt=prompt)
+        openai_messages = [
+            schema.SystemMessage(
+                content='You are a helpful assistant.',
+            ),
+            schema.HumanMessage(content=prompt),
+        ]
+        openai_result = chat(openai_messages)
+        summary_message = openai_result.content
 
-        # Define StuffDocumentsChain
-        stuff_chain = StuffDocumentsChain(
-            llm_chain=llm_chain, document_variable_name="text"
-        )
+    room = Room.get_room_object(room_id)
+    RoomMember.objects.get_or_create(
+        room_id=room,
+        member_id=user_bot
+    )
+    message = Message(
+        type='message',
+        sender_id=user_bot,
+        body=summary_message,
+        room_id=room,
+    )
+    message.save()
+    user = Member.objects.get(id=current_user_id)
 
-        docs = messages
-        summary_message = stuff_chain.run(docs)
-        print(summary_message)
-
-        room = Room.get_room_object(room_id)
-        RoomMember.objects.get_or_create(
-            room_id=room.id,
-            member_id=user_bot.id
-        )
-        message = Message(
-            type='message',
-            sender_id=user_bot.id,
-            body=summary_message,
-            room_id=room_id,
-        )
-
-        MessageFacade(
-            message=message,
-            room=Room,
-            user=current_user
-        ).send_message()
+    MessageFacade(
+        message=message,
+        room=room,
+        user=user
+    ).send_message()
 

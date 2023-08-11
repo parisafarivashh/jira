@@ -17,14 +17,16 @@ class MessageFacade:
         self._update_is_seen()
 
     def _update_latest_message_seen(self):
-        room_member = RoomMember.objects.get(
-            room_id=self.room,
-            member_id=self.user,
-        )
-
-        if room_member is not None:
+        try:
+            room_member = RoomMember.objects.get(
+                room_id=self.room,
+                member_id=self.user,
+            )
             room_member.latest_seen_message_id = self.message
             room_member.save(update_fields=["latest_seen_message_id"])
+
+        except Exception:
+            pass
 
     def _update_is_seen(self):
         Message.objects.filter(
@@ -39,13 +41,17 @@ class MessageFacade:
             room_id=self.room.id,
             id__lt=self.message.id,
         )
-        objects = [
-            MemberMessageSeen(
-                message_id=message,
-                member_id=self.user
-            ) for message in messages
-        ]
-        MemberMessageSeen.objects.bulk_create(objects, ignore_conflicts=True)
+        if messages is not None:
+            objects = [
+                MemberMessageSeen(
+                    message_id=message,
+                    member_id=self.user
+                ) for message in messages
+            ]
+            MemberMessageSeen.objects.bulk_create(
+                objects,
+                ignore_conflicts=True
+            )
 
 
 class MessageFactory:

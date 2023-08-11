@@ -253,6 +253,6 @@ class RoomSummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, id=None):
-        summary_room.delay(request.user, id)
+        summary_room.delay(request.user.id, id)
         return Response(status=status.HTTP_200_OK)
 
