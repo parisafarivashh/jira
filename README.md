@@ -38,10 +38,12 @@
   - [x] create/list/update assignment
 
  
- - [x] Implemented celery-task
- - [x] Used swagger for documentation
-    
+ - [x] Implemented celery-task    
  - [x] Used Signals post-save for updating status of the assignment
- - [x] API to get a summary of the room and send it as a message -> Used AI (LANGCHAIN)  
+ - [x] API to get a summary of the room and send it as a message -> Used AI (LANGCHAIN)
+
+- [x] --------------------------------------------------------------------------------------------
+ 
+ - [x] Used swagger for documentation
 
  
