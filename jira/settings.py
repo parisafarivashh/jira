@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'django_celery_results',
+    'rest_framework_swagger',
+    'drf_yasg',
 
     'src',
     'user',
@@ -66,7 +68,6 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend'
     ],
-
 }
 
 TEMPLATES = [

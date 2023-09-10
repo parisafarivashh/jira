@@ -1,7 +1,9 @@
 from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
-from rest_framework import status, viewsets, generics
+from rest_framework import status, viewsets, generics, mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import GenericAPIView
@@ -20,7 +22,7 @@ from .permissions import SeenOwnMessagePermission, SeenPermission, \
 from .serializers import ProjectSerializer, UpdateProjectSerializer, \
     SeenMessageSerializer, EditMessageSerializer, MessageSerializer, \
     MemberMessageSeenSerializer, TaskSerializer, AssignmentSerializer, \
-    AssignmentUpdateSerializer
+    AssignmentUpdateSerializer, SummarySerializer
 from .tasks import summary_room
 
 
@@ -83,7 +85,7 @@ class ProjectView(GenericAPIView, RetrieveModelMixin, ListModelMixin,
 
 
 # region message view
-class MessageView(viewsets.ModelViewSet):
+class MessageView(viewsets.GenericViewSet):
     queryset = Message.objects.all()
 
     @action(detail=True, url_path='see', methods=['patch'],
@@ -136,6 +138,10 @@ class ListAndSendMessageView(generics.ListCreateAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['is_seen']
 
+    @swagger_auto_schema(
+        operation_id="message_create",
+        responses={200: openapi.Response("Success response description")},
+    )
     @transaction.atomic()
     def post(self, request, *args, **kwargs):
         room = Room.get_room_object(kwargs['id'])
@@ -159,6 +165,10 @@ class ListAndSendMessageView(generics.ListCreateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_id="message_list",
+        responses={200: openapi.Response("Success response description")},
+    )
     def get(self, request, *args, **kwargs):
         room = Room.get_room_object(kwargs['id'])
         check_room_member(room, request.user)
@@ -179,6 +189,10 @@ class ListMemberSeenMessageView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MemberMessageSeenSerializer
 
+    @swagger_auto_schema(
+        operation_id="message_seen",
+        responses={200: openapi.Response("Success response description")},
+    )
     def get(self, request, *args, **kwargs):
         message = Message.get_message_object(kwargs['id'])
 
@@ -251,6 +265,7 @@ class AssignmentUpdateView(generics.UpdateAPIView):
 
 class RoomSummaryView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = SummarySerializer
 
     def get(self, request, id=None):
         summary_room.delay(request.user.id, id)

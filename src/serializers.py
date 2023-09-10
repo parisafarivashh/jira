@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import ModelSerializer
 
 from .models import Project, Room, Message, MemberMessageSeen, RoomMember, \
@@ -218,4 +218,12 @@ class AssignmentUpdateSerializer(serializers.ModelSerializer):
                 detail={"error": 'date must be more than today'}
             )
         return attrs
+
+
+class SummarySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Room
+        fields = ['id', 'title', 'type']
+
 # endregion
