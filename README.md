@@ -52,3 +52,32 @@
          *) Search field and filter field   
       )
  
+ - [x] use SeparateDatabaseAndState in migration django 
+ ``` 
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('src', '0003_rename_private_room_id_task_private_room'),
+    ]
+
+    operations = [
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.AddIndex(
+                    model_name='roommember',
+                    index=models.Index(fields=['member'], name='room_member_index')
+                )
+            ],
+            database_operations=[
+                migrations.RunSQL(
+                    """
+                    CREATE INDEX "room_member_index" ON "room_member" ("member_id");
+                    """,
+                    reverse_sql=migrations.RunSQL.noop
+                )
+            ]
+        )
+
+    ]
+ ```

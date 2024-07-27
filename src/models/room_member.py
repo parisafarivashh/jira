@@ -20,4 +20,10 @@ class RoomMember(BaseClassMixin):
                 name='unique_room_member',
             )
         ]
+        indexes = [
+            models.Index(
+                fields=['member'],
+                name='room_member_index'
+            )
+        ]
 
