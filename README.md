@@ -45,5 +45,10 @@
 - [x] --------------------------------------------------------------------------------------------
  
  - [x] Used swagger for documentation
-
+ - [X] Used admin custom(  
+         *) Customize Admin Site with ModelAdmin Class  
+         *) Use list_select_related           
+         *) List Display Custom Fields   
+         *) Search field and filter field   
+      )
  
