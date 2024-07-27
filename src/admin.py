@@ -29,8 +29,8 @@ class ProjectAdmin(admin.ModelAdmin):
 
 
 class RoomMemberAdmin(admin.ModelAdmin):
-    list_display = ["id", "room_id", "member_id", "latest_seen_message_id"]
-    list_select_related = ["room_id", "member_id", "latest_seen_message_id"]
+    list_display = ["id", "room_id", "member_id", "latest_seen_message"]
+    list_select_related = ["room_id", "member_id", "latest_seen_message"]
     readonly_fields = ["id"]
     list_filter = ["id", "room_id", "member_id"]
     search_filter = ["id", "room_id", "member_id"]

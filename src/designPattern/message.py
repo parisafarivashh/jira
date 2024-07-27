@@ -22,8 +22,8 @@ class MessageFacade:
                 room_id=self.room,
                 member_id=self.user,
             )
-            room_member.latest_seen_message_id = self.message
-            room_member.save(update_fields=["latest_seen_message_id"])
+            room_member.latest_seen_message = self.message
+            room_member.save(update_fields=["latest_seen_message"])
 
         except Exception:
             pass

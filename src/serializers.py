@@ -108,8 +108,8 @@ class SeenMessageSerializer(ModelSerializer):
             room_member = RoomMember.objects.get(
                 member_id=user, room_id=instance.room_id
             )
-            room_member.latest_seen_message_id = instance
-            room_member.save(update_fields=["latest_seen_message_id"])
+            room_member.latest_seen_message = instance
+            room_member.save(update_fields=["latest_seen_message"])
         except RoomMember.DoesNotExist:
             pass
 
