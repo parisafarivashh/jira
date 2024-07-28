@@ -45,6 +45,7 @@
 - [x] --------------------------------------------------------------------------------------------
  
  - [x] Used swagger for documentation
+ - [x] Used django-debug-toolbar
  - [X] Used admin custom(  
          *) Customize Admin Site with ModelAdmin Class  
          *) Use list_select_related           
@@ -56,6 +57,7 @@
  ``` 
 
 class Migration(migrations.Migration):
+    atomic = False
 
     dependencies = [
         ('src', '0003_rename_private_room_id_task_private_room'),

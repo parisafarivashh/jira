@@ -27,60 +27,60 @@ from .tasks import summary_room
 
 
 # region project view
-class CreateProjectView(APIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = ProjectSerializer
+# class CreateProjectView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = ProjectSerializer
+#
+#     @transaction.atomic
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.serializer_class(
+#             data=request.data,
+#             context={'request': request}
+#         )
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save(created_by=request.user)
+#
+#         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
-    @transaction.atomic
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(
-            data=request.data,
-            context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save(created_by=request.user)
 
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
-
-
-class ProjectView(GenericAPIView, RetrieveModelMixin, ListModelMixin,
-                  UpdateModelMixin, DestroyModelMixin):
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
-
-    def get_queryset(self):
-        return Project.objects.all()
-
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return ProjectSerializer
-        else:
-            return UpdateProjectSerializer
-
-    def get(self, request, id=None):
-        if id:
-            return self.retrieve(request, id)
-        else:
-            return self.list(request)
-
-    def put(self, request, id):
-        return self.update(request, id)
-
-    def patch(self, request, id):
-        return self.update(request, id, partial=True)
-
-    def delete(self, request, id=None):
-        if id:
-            try:
-                Project.objects.get(id=id).soft_delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-
-            except Exception as ex:
-                return Response(
-                    data=str(ex), status=status.HTTP_400_BAD_REQUEST
-                )
-        else:
-            raise NotFound
+# class ProjectView(GenericAPIView, RetrieveModelMixin, ListModelMixin,
+#                   UpdateModelMixin, DestroyModelMixin):
+#     permission_classes = [IsAuthenticated]
+#     lookup_field = 'id'
+#
+#     def get_queryset(self):
+#         return Project.objects.all()
+#
+#     def get_serializer_class(self):
+#         if self.request.method == 'GET':
+#             return ProjectSerializer
+#         else:
+#             return UpdateProjectSerializer
+#
+#     def get(self, request, id=None):
+#         if id:
+#             return self.retrieve(request, id)
+#         else:
+#             return self.list(request)
+#
+#     def put(self, request, id):
+#         return self.update(request, id)
+#
+#     def patch(self, request, id):
+#         return self.update(request, id, partial=True)
+#
+#     def delete(self, request, id=None):
+#         if id:
+#             try:
+#                 Project.objects.get(id=id).soft_delete()
+#                 return Response(status=status.HTTP_204_NO_CONTENT)
+#
+#             except Exception as ex:
+#                 return Response(
+#                     data=str(ex), status=status.HTTP_400_BAD_REQUEST
+#                 )
+#         else:
+#             raise NotFound
 # endregion
 
 

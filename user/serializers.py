@@ -15,9 +15,8 @@ class MemberRegisterSerializer(serializers.ModelSerializer):
             title=validated_data['title'],
             email=validated_data['email'],
             phone=validated_data['phone'],
+            password=validated_data['password'],
         )
-        member.set_password(validated_data['password'])
-        member.save()
         return member
 
 

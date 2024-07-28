@@ -1,4 +1,5 @@
 import environ
+from django.contrib.auth import get_user_model
 
 from django.db import transaction
 from langchain import schema, chat_models
@@ -9,11 +10,11 @@ from .models import RoomMember, Room, Message
 
 from jira import celery_app
 from jira.tasks import MyTask
-from user.models import Member
 
 
 env = environ.Env()
 environ.Env.read_env()
+Member = get_user_model()
 
 
 @celery_app.task(
@@ -22,8 +23,12 @@ environ.Env.read_env()
     name='Create_room_member',
 )
 @transaction.atomic
-def create_room_member(user_id, public_room_id, private_room_id,
-                       manager_id=None):
+def create_room_member(
+        user_id: int,
+        public_room_id: int,
+        private_room_id: int,
+        manager_id: int = None,
+):
     try:
         private_room = Room.objects.get(id=private_room_id)
         public_room = Room.objects.get(id=public_room_id)
@@ -32,13 +37,13 @@ def create_room_member(user_id, public_room_id, private_room_id,
         if manager_id is not None:
             manager = Member.objects.get(id=manager_id)
             RoomMember.objects.bulk_create([
-                RoomMember(member_id=manager, room_id=public_room),
-                RoomMember(member_id=manager, room_id=private_room),
+                RoomMember(member=manager, room=public_room),
+                RoomMember(member=manager, room=private_room),
             ], ignore_conflicts=True)
 
         RoomMember.objects.bulk_create([
-            RoomMember(member_id=user, room_id=public_room),
-            RoomMember(member_id=user, room_id=private_room),
+            RoomMember(member=user, room=public_room),
+            RoomMember(member=user, room=private_room),
         ], ignore_conflicts=True)
 
     except Exception:

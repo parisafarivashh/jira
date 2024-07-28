@@ -11,54 +11,54 @@ from .tasks import create_room_member
 
 
 # region project serializer
-class ProjectSerializer(ModelSerializer):
-    class Meta:
-        model = Project
-        fields = ['id', 'title', 'description', 'manager_id', 'status',
-                  'public_room_id', 'private_room_id', 'created_by']
+# class ProjectSerializer(ModelSerializer):
+#     class Meta:
+#         model = Project
+#         fields = ['id', 'title', 'description', 'manager_id', 'status',
+#                   'public_room_id', 'private_room_id', 'created_by']
+#
+#         extra_kwargs = {
+#             'public_room_id': {'read_only': True},
+#             'private_room_id': {'read_only': True},
+#             'created_by': {'read_only': True},
+#         }
+#
+#     def create(self, validated_data):
+#         user = self.context['request'].user
+#         public_room_id = Room.objects.create(
+#             title=validated_data['title'],
+#             type='project',
+#             private=False,
+#             owner=user
+#         )
+#         private_room_id = Room.objects.create(
+#             title=validated_data['title'],
+#             type='project',
+#             private=True,
+#             owner=user
+#         )
+#         Message.objects.create(
+#             type='alert',
+#             body='Created',
+#             sender_id=user,
+#             room_id=public_room_id,
+#         )
+#
+#         manager_id = validated_data['manager_id'].id
+#         create_room_member.apply_async((
+#             user.id, public_room_id.id, private_room_id.id, manager_id
+#         ))
+#
+#         validated_data['public_room_id'] = public_room_id
+#         validated_data['private_room_id'] = private_room_id
+#
+#         return super(ProjectSerializer, self).create(validated_data)
 
-        extra_kwargs = {
-            'public_room_id': {'read_only': True},
-            'private_room_id': {'read_only': True},
-            'created_by': {'read_only': True},
-        }
 
-    def create(self, validated_data):
-        user = self.context['request'].user
-        public_room_id = Room.objects.create(
-            title=validated_data['title'],
-            type='project',
-            private=False,
-            owner=user
-        )
-        private_room_id = Room.objects.create(
-            title=validated_data['title'],
-            type='project',
-            private=True,
-            owner=user
-        )
-        Message.objects.create(
-            type='alert',
-            body='Created',
-            sender_id=user,
-            room_id=public_room_id,
-        )
-
-        manager_id = validated_data['manager_id'].id
-        create_room_member.delay(
-            user.id, public_room_id.id, private_room_id.id, manager_id
-        )
-
-        validated_data['public_room_id'] = public_room_id
-        validated_data['private_room_id'] = private_room_id
-
-        return super(ProjectSerializer, self).create(validated_data)
-
-
-class UpdateProjectSerializer(ModelSerializer):
-    class Meta:
-        model = Project
-        fields = ['id', 'title', 'description', 'manager_id', 'status']
+# class UpdateProjectSerializer(ModelSerializer):
+#     class Meta:
+#         model = Project
+#         fields = ['id', 'title', 'description', 'manager_id', 'status']
 # endregion
 
 
