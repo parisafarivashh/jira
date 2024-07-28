@@ -17,10 +17,7 @@ class TaskView(viewsets.ModelViewSet):
     lookup_field = 'id'
 
     def get_queryset(self):
-        # todo : better ways? use queryset custom for filtering removed at
-        #  every place
         tasks = Task.objects \
-            .filter(removed_at=None) \
             .filter(
                 Q(manager=self.request.user) |
                 Q(created_by=self.request.user)

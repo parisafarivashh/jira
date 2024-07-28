@@ -7,6 +7,11 @@ from . import BaseClassMixin, SoftDeleteMixin, Project, Room
 Member = get_user_model()
 
 
+class TaskManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(removed_at=None)
+
+
 class Task(BaseClassMixin, SoftDeleteMixin):
 
     class Status(models.TextChoices):
@@ -22,6 +27,8 @@ class Task(BaseClassMixin, SoftDeleteMixin):
     private_room = models.OneToOneField(Room, on_delete=models.PROTECT, related_name='private_tasks')
     manager = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='manage_tasks')
     created_by = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='create_tasks')
+
+    objects = TaskManager()
 
     class Meta:
         db_table = 'task'
