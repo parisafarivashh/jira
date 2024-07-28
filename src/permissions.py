@@ -34,6 +34,6 @@ class EditOwnMessage(BasePermission):
 class EditOwnAssignment(BasePermission):
 
     def has_object_permission(self, request, view, obj):
-        if obj.member_id == request.user:
+        if obj.member == request.user or obj.created_by == request.user:
             return True
 

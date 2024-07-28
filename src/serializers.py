@@ -175,49 +175,49 @@ class MemberMessageSeenSerializer(ModelSerializer):
 # endregion
 
 
-# region Assignment serializer
-class AssignmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Assignment
-        fields = ['id', 'member_id', 'task_id', 'status',
-                  'public_room_id', 'private_room_id', 'created_by']
-        extra_kwargs = {
-            'status': {'read_only': True},
-            'public_room_id': {'read_only': True},
-            'private_room_id': {'read_only': True},
-            'created_by': {'read_only': True},
-        }
+# # region Assignment serializer
+# class AssignmentSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Assignment
+#         fields = ['id', 'member_id', 'task_id', 'status',
+#                   'public_room_id', 'private_room_id', 'created_by']
+#         extra_kwargs = {
+#             'status': {'read_only': True},
+#             'public_room_id': {'read_only': True},
+#             'private_room_id': {'read_only': True},
+#             'created_by': {'read_only': True},
+#         }
+#
+#     def create(self, validated_data):
+#         user = self.context['request'].user
+#         validated_data['created_by'] = user
+#
+#         task_id = validated_data['task_id']
+#
+#         validated_data['public_room_id'] = task_id.public_room_id
+#         validated_data['private_room_id'] = task_id.private_room_id
+#
+#         create_room_member.delay(user.id, task_id.public_room_id.id,
+#                                  task_id.private_room_id.id)
+#
+#         return super(AssignmentSerializer, self).create(validated_data)
 
-    def create(self, validated_data):
-        user = self.context['request'].user
-        validated_data['created_by'] = user
 
-        task_id = validated_data['task_id']
-
-        validated_data['public_room_id'] = task_id.public_room_id
-        validated_data['private_room_id'] = task_id.private_room_id
-
-        create_room_member.delay(user.id, task_id.public_room_id.id,
-                                 task_id.private_room_id.id)
-
-        return super(AssignmentSerializer, self).create(validated_data)
-
-
-class AssignmentUpdateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Assignment
-        fields = ['id', 'start_date', 'end_date', 'estimate_hours', 'status']
-        extra_kwargs = {'status': {'read_only': True}}
-
-    def validate(self, attrs):
-        if attrs['start_date'].date() < datetime.today().date() or \
-                attrs['end_date'].date() < datetime.today().date():
-
-            raise ValidationError(
-                detail={"error": 'date must be more than today'}
-            )
-        return attrs
+# class AssignmentUpdateSerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = Assignment
+#         fields = ['id', 'start_date', 'end_date', 'estimate_hours', 'status']
+#         extra_kwargs = {'status': {'read_only': True}}
+#
+#     def validate(self, attrs):
+#         if attrs['start_date'].date() < datetime.today().date() or \
+#                 attrs['end_date'].date() < datetime.today().date():
+#
+#             raise ValidationError(
+#                 detail={"error": 'date must be more than today'}
+#             )
+#         return attrs
 
 
 class SummarySerializer(serializers.ModelSerializer):

@@ -1,7 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from .views import CreateProjectView, ProjectView, TaskView
+from .views import CreateProjectView, ProjectView, TaskView, AssignmentView, \
+    AssignmentUpdateView
 
 
 router = DefaultRouter()
@@ -17,8 +18,8 @@ urlpatterns = [
     # path('message/<int:id>/seen/members', ListMemberSeenMessageView.as_view(), name='members_seen_message'),
 
 
-    # path('assignment/', AssignmentView.as_view(), name='assignment_view'),
-    # path('assignment/<int:id>/', AssignmentUpdateView.as_view(), name='assignment_view'),
+    path('assignment/', AssignmentView.as_view(), name='assignment_view'),
+    path('assignment/<int:id>/', AssignmentUpdateView.as_view(), name='assignment_view'),
 
     path('', include(router.urls)),
 ]

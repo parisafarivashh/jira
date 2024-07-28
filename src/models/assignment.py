@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -9,6 +10,12 @@ from . import BaseClassMixin, SoftDeleteMixin, Room, Task
 
 
 Member = get_user_model()
+
+
+class AssignmentManager(models.Manager):
+
+    def is_user_assign(self, user):
+        return self.filter(Q(member=user) | Q(created_by=user))
 
 
 class Assignment(BaseClassMixin, SoftDeleteMixin):
@@ -39,6 +46,8 @@ class Assignment(BaseClassMixin, SoftDeleteMixin):
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     estimate_hours = models.IntegerField(default=0)
+
+    objects = AssignmentManager()
 
     class Meta:
         db_table = 'assignment'
