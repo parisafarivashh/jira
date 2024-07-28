@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Manager
 
 from . import BaseClassMixin, SoftDeleteMixin, Project, Room
 
@@ -9,7 +10,7 @@ Member = get_user_model()
 
 class TaskManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(removed_at=None)
+        return super().get_queryset().filter(removed_at__isnull=True)
 
 
 class Task(BaseClassMixin, SoftDeleteMixin):
@@ -32,4 +33,16 @@ class Task(BaseClassMixin, SoftDeleteMixin):
 
     class Meta:
         db_table = 'task'
+        verbose_name = "UndeletedTask"
+        verbose_name_plural = "UndeletedTasks"
+
+
+class TaskProxy(Task):
+
+    objects = Manager()
+
+    class Meta:
+        proxy = True
+        verbose_name = "DeletedTask"
+        verbose_name_plural = "DeletedTasks"
 

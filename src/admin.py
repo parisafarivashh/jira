@@ -1,8 +1,9 @@
+from datetime import datetime
+
 from django.contrib import admin
 
 from .models import Project, Room, Message, MemberMessageSeen, RoomMember, \
-    Task, Assignment
-
+    Task, Assignment, TaskProxy
 
 admin.site.site_title = "Site admin (DEV)"
 admin.site.site_header = "Administration"
@@ -66,16 +67,6 @@ class MemberMessageSeenAdmin(admin.ModelAdmin):
     search_filter = ["id", "message_id", "member_id"]
 
 
-class TaskAdmin(admin.ModelAdmin):
-    list_display = ["id", "status", "title", "project_id", "public_room_id", "private_room_id",
-                    "manager_id", "created_by"]
-    list_select_related = ["project_id", "public_room_id", "private_room_id",
-                           "manager_id", "created_by"]
-    readonly_fields = ["id"]
-    list_filter = ["id", "project_id", "manager_id"]
-    search_filter = ["id", "project_id", "manager_id"]
-
-
 class AssignmentAdmin(admin.ModelAdmin):
     list_display = ["id", "start_date", "end_date", "estimate_hours", "member_id",
                     "public_room_id", "private_room_id", "task_id", "created_by"]
@@ -91,11 +82,46 @@ class AssignmentAdmin(admin.ModelAdmin):
     search_filter = ["id", "start_date", "end_date"]
 
 
+# show deleted task and normal task in different page
+@admin.register(Task)
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ["id", "status", "title", "project", "public_room", "private_room",
+                    "manager", "created_by"]
+    list_select_related = ["project", "public_room", "private_room", "manager",
+                           "created_by"]
+    readonly_fields = ["id", "removed_at"]
+    list_filter = ["id", "project", "manager"]
+    search_filter = ["id", "project", "manager"]
+    actions = ['delete']
+
+    @admin.action(description='Marks as delete object')
+    def delete(self, request, queryset):
+        queryset.update(removed_at=datetime.utcnow())
+
+
+@admin.register(TaskProxy)
+class TaskDeletedAdmin(admin.ModelAdmin):
+    list_display = ["id", "status", "title", "project", "public_room", "private_room",
+                    "manager", "created_by"]
+    list_select_related = ["project", "public_room", "private_room", "manager",
+                           "created_by"]
+    readonly_fields = ["id", "removed_at"]
+    list_filter = ["id", "project", "manager"]
+    search_filter = ["id", "project", "manager"]
+    actions = ['recover']
+
+    def get_queryset(self, request):
+        return TaskProxy.objects.filter(removed_at__isnull=False)
+
+    @admin.action(description='Mark as un delete object')
+    def recover(self, request, queryset):
+        queryset.update(removed_at=None)
+
+
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Room, RoomAdmin)
 admin.site.register(RoomMember, RoomMemberAdmin)
 admin.site.register(Message, MessageAdmin)
 admin.site.register(MemberMessageSeen, MemberMessageSeenAdmin)
-admin.site.register(Task, TaskAdmin)
 admin.site.register(Assignment, AssignmentAdmin)
 

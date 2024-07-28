@@ -17,7 +17,7 @@ class SoftDeleteMixin(models.Model):
     class Meta:
         abstract = True
 
-    def soft_delete(self):
+    def delete(self, using=None, keep_parents=False):
         if self.removed_at is not None:
             raise ValueError('Object is already deleted')
 

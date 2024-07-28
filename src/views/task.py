@@ -32,7 +32,7 @@ class TaskView(viewsets.ModelViewSet):
 
     def delete(self, request, *args, **kwargs):
         try:
-            self.get_object().soft_delete()
+            self.get_object().delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as exc:
             logger.error(
