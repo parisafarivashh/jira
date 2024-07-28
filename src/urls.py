@@ -1,15 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from .views import CreateProjectView, ProjectView
+from .views import CreateProjectView, ProjectView, TaskView
 
-# from .views import CreateProjectView, ProjectView, ListAndSendMessageView, \
-#     MessageView, ListMemberSeenMessageView, TaskView, AssignmentView, \
-#     AssignmentUpdateView, RoomSummaryView
 
 router = DefaultRouter()
 # router.register('message', MessageView, basename='messageView')
-# router.register('task', TaskView, basename='taskView')
+router.register('task', TaskView, basename='taskView')
 
 
 urlpatterns = [
@@ -23,6 +20,6 @@ urlpatterns = [
     # path('assignment/', AssignmentView.as_view(), name='assignment_view'),
     # path('assignment/<int:id>/', AssignmentUpdateView.as_view(), name='assignment_view'),
 
-    # path('', include(router.urls)),
+    path('', include(router.urls)),
 ]
 

@@ -126,52 +126,52 @@ class MemberMessageSeenSerializer(ModelSerializer):
 
 
 # region Task serializer
-class TaskSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Task
-        fields = '__all__'
-        extra_kwargs = {
-            'status': {'read_only': True},
-            'public_room_id': {'read_only': True},
-            'private_room_id': {'read_only': True},
-            'manager_id': {'read_only': True},
-            'created_by': {'read_only': True},
-        }
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        validated_data['created_by'] = user
-        validated_data['manager_id'] = validated_data['project_id'].manager_id
-
-        public_room_id = Room.objects.create(
-            title=validated_data['title'],
-            type='task',
-            private=False,
-            owner=user
-        )
-        private_room_id = Room.objects.create(
-            title=validated_data['title'],
-            type='task',
-            private=True,
-            owner=user
-        )
-
-        Message.objects.create(
-            type='alert',
-            body='Created',
-            sender_id=user,
-            room_id=public_room_id,
-        )
-        validated_data['public_room_id'] = public_room_id
-        validated_data['private_room_id'] = private_room_id
-
-        manager_id = validated_data['manager_id'].id
-        create_room_member.delay(
-            user.id, public_room_id.id, private_room_id.id, manager_id
-        )
-
-        return super(TaskSerializer, self).create(validated_data)
+# class TaskSerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = Task
+#         fields = '__all__'
+#         extra_kwargs = {
+#             'status': {'read_only': True},
+#             'public_room_id': {'read_only': True},
+#             'private_room_id': {'read_only': True},
+#             'manager_id': {'read_only': True},
+#             'created_by': {'read_only': True},
+#         }
+#
+#     def create(self, validated_data):
+#         user = self.context['request'].user
+#         validated_data['created_by'] = user
+#         validated_data['manager_id'] = validated_data['project_id'].manager_id
+#
+#         public_room_id = Room.objects.create(
+#             title=validated_data['title'],
+#             type='task',
+#             private=False,
+#             owner=user
+#         )
+#         private_room_id = Room.objects.create(
+#             title=validated_data['title'],
+#             type='task',
+#             private=True,
+#             owner=user
+#         )
+#
+#         Message.objects.create(
+#             type='alert',
+#             body='Created',
+#             sender_id=user,
+#             room_id=public_room_id,
+#         )
+#         validated_data['public_room_id'] = public_room_id
+#         validated_data['private_room_id'] = private_room_id
+#
+#         manager_id = validated_data['manager_id'].id
+#         create_room_member.delay(
+#             user.id, public_room_id.id, private_room_id.id, manager_id
+#         )
+#
+#         return super(TaskSerializer, self).create(validated_data)
 # endregion
 
 
