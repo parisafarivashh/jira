@@ -30,22 +30,22 @@ class MessageFacade:
 
     def _update_is_seen(self):
         Message.objects.filter(
-            ~Q(sender_id=self.user),
+            ~Q(sender=self.user),
             id__lt=self.message.id,
-            room_id=self.room,
+            room=self.room,
         ).update(is_seen=True)
 
     def _insert_member_message_seen(self):
         messages = Message.objects.filter(
-            ~Q(sender_id=self.user),
-            room_id=self.room.id,
+            ~Q(sender=self.user),
+            room=self.room.id,
             id__lt=self.message.id,
         )
         if messages is not None:
             objects = [
                 MemberMessageSeen(
-                    message_id=message,
-                    member_id=self.user
+                    message=message,
+                    member=self.user
                 ) for message in messages
             ]
             MemberMessageSeen.objects.bulk_create(
@@ -53,13 +53,4 @@ class MessageFacade:
                 ignore_conflicts=True
             )
 
-
-class MessageFactory:
-
-    @staticmethod
-    def get_message(message_id):
-        try:
-            return Message.objects.get(id=message_id)
-        except Message.DoseNotExist:
-            raise NotFound
 

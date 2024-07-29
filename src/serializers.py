@@ -63,58 +63,58 @@ from .tasks import create_room_member
 
 
 # region message serializer
-class MessageSerializer(ModelSerializer):
+# class MessageSerializer(ModelSerializer):
+#
+#     class Meta:
+#         model = Message
+#         fields = ['id', 'body', 'room_id', 'type', 'sender_id', 'is_seen']
+#         extra_kwargs = {
+#             'room_id': {'read_only': True},
+#             'type': {'read_only': True},
+#             'sender_id': {'read_only': True},
+#             'is_seen': {'read_only': True},
+#         }
+#
+#     def create(self, validated_data):
+#         user = self.context['request'].user
+#         room_id = self.context['room_id']
+#
+#         validated_data['room_id'] = room_id
+#         validated_data['type'] = 'message'
+#         validated_data['sender_id'] = user
+#         return super(MessageSerializer, self).create(validated_data)
+#
 
-    class Meta:
-        model = Message
-        fields = ['id', 'body', 'room_id', 'type', 'sender_id', 'is_seen']
-        extra_kwargs = {
-            'room_id': {'read_only': True},
-            'type': {'read_only': True},
-            'sender_id': {'read_only': True},
-            'is_seen': {'read_only': True},
-        }
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        room_id = self.context['room_id']
-
-        validated_data['room_id'] = room_id
-        validated_data['type'] = 'message'
-        validated_data['sender_id'] = user
-        return super(MessageSerializer, self).create(validated_data)
+# class EditMessageSerializer(ModelSerializer):
+#     class Meta:
+#         model = Message
+#         fields = ['id', 'body']
 
 
-class EditMessageSerializer(ModelSerializer):
-    class Meta:
-        model = Message
-        fields = ['id', 'body']
-
-
-class SeenMessageSerializer(ModelSerializer):
-
-    class Meta:
-        model = Message
-        fields = ['id', 'is_seen']
-
-    @transaction.atomic()
-    def update(self, instance, validated_data):
-        user = self.context['request'].user
-        MemberMessageSeen.objects.create(
-            member_id=user,
-            message_id=instance
-        )
-        try:
-            room_member = RoomMember.objects.get(
-                member_id=user, room_id=instance.room_id
-            )
-            room_member.latest_seen_message = instance
-            room_member.save(update_fields=["latest_seen_message"])
-        except RoomMember.DoesNotExist:
-            pass
-
-        super().update(instance, validated_data)
-        return instance
+# class SeenMessageSerializer(ModelSerializer):
+#
+#     class Meta:
+#         model = Message
+#         fields = ['id', 'is_seen']
+#
+#     @transaction.atomic()
+#     def update(self, instance, validated_data):
+#         user = self.context['request'].user
+#         MemberMessageSeen.objects.create(
+#             member_id=user,
+#             message_id=instance
+#         )
+#         try:
+#             room_member = RoomMember.objects.get(
+#                 member_id=user, room_id=instance.room_id
+#             )
+#             room_member.latest_seen_message = instance
+#             room_member.save(update_fields=["latest_seen_message"])
+#         except RoomMember.DoesNotExist:
+#             pass
+#
+#         super().update(instance, validated_data)
+#         return instance
 
 
 class MemberMessageSeenSerializer(ModelSerializer):

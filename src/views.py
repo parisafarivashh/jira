@@ -6,7 +6,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets, generics, mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, \
     UpdateModelMixin, DestroyModelMixin
 from rest_framework.permissions import IsAuthenticated
@@ -85,104 +85,85 @@ from .tasks import summary_room
 
 
 # region message view
-class MessageView(viewsets.GenericViewSet):
-    queryset = Message.objects.all()
+# class MessageView(viewsets.GenericViewSet):
+#     queryset = Message.objects.all()
+#
+#     @action(detail=True, url_path='see', methods=['patch'],
+#             serializer_class=SeenMessageSerializer)
+#     def see(self, request, pk=None):
+#         instance = self.get_object()
+#         serializer = self.get_serializer(data=request.data, instance=instance)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#
+#     @action(detail=True, url_path='edit', methods=['patch'],
+#             serializer_class=EditMessageSerializer)
+#     def edit(self, request, pk=None):
+#         instance = self.get_object()
+#         serializer = self.get_serializer(data=request.data, instance=instance)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#
+#     def get_permissions(self):
+#         if self.action == 'see':
+#             permission_classes = [
+#                 IsAuthenticated,
+#                 SeenOwnMessagePermission,
+#                 SeenPermission
+#             ]
+#         elif self.action == 'edit':
+#             permission_classes = [
+#                 IsAuthenticated,
+#                 EditOwnMessage,
+#             ]
+#         else:
+#             permission_classes = [IsAuthenticated]
+#         return [permission() for permission in permission_classes]
+#
+#     def get_serializer_class(self):
+#         if self.action == 'retrieve':
+#             return MessageSerializer
+#
+#     def get_serializer_context(self):
+#         context = super(MessageView, self).get_serializer_context()
+#         context.update({'request': self.request})
+#         return context
 
-    @action(detail=True, url_path='see', methods=['patch'],
-            serializer_class=SeenMessageSerializer)
-    def see(self, request, pk=None):
-        instance = self.get_object()
-        serializer = self.get_serializer(data=request.data, instance=instance)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, url_path='edit', methods=['patch'],
-            serializer_class=EditMessageSerializer)
-    def edit(self, request, pk=None):
-        instance = self.get_object()
-        serializer = self.get_serializer(data=request.data, instance=instance)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def get_permissions(self):
-        if self.action == 'see':
-            permission_classes = [
-                IsAuthenticated,
-                SeenOwnMessagePermission,
-                SeenPermission
-            ]
-        elif self.action == 'edit':
-            permission_classes = [
-                IsAuthenticated,
-                EditOwnMessage,
-            ]
-        else:
-            permission_classes = [IsAuthenticated]
-        return [permission() for permission in permission_classes]
-
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return MessageSerializer
-
-    def get_serializer_context(self):
-        context = super(MessageView, self).get_serializer_context()
-        context.update({'request': self.request})
-        return context
-
-
-class ListAndSendMessageView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = MessageSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['is_seen']
-
-    @swagger_auto_schema(
-        operation_id="message_create",
-        responses={200: openapi.Response("Success response description")},
-    )
-    @transaction.atomic()
-    def post(self, request, *args, **kwargs):
-        room = Room.get_room_object(kwargs['id'])
-
-        check_room_member(room, request.user)
-
-        serializer = self.serializer_class(
-            context={'request': request, 'room_id': room},
-            data=self.request.data
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        message = MessageFactory().get_message(serializer.data['id'])
-
-        MessageFacade(
-            message=message,
-            room=room,
-            user=request.user
-        ).send_message()
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        operation_id="message_list",
-        responses={200: openapi.Response("Success response description")},
-    )
-    def get(self, request, *args, **kwargs):
-        room = Room.get_room_object(kwargs['id'])
-        check_room_member(room, request.user)
-
-        queryset = Message.objects.filter(room_id=room)
-        queryset = self.filter_queryset(queryset)
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+# class ListAndSendMessageView(generics.ListCreateAPIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = MessageSerializer
+#     filter_backends = [DjangoFilterBackend]
+#     filterset_fields = ['is_seen']
+#
+#     @swagger_auto_schema(
+#         operation_id="message_create",
+#         responses={200: openapi.Response("Success response description")},
+#     )
+#     @transaction.atomic()
+#     def post(self, request, *args, **kwargs):
+#         return super().post(request, *args, **kwargs)
+#
+#     @swagger_auto_schema(
+#         operation_id="message_list",
+#         responses={200: openapi.Response("Success response description")},
+#     )
+#     def get(self, request, *args, **kwargs):
+#         room = Room.get_room_object(kwargs['id'])
+#         check_room_member(room, request.user)
+#
+#         queryset = Message.objects.filter(room_id=room)
+#         queryset = self.filter_queryset(queryset)
+#
+#         page = self.paginate_queryset(queryset)
+#         if page is not None:
+#             serializer = self.serializer_class(page, many=True)
+#             return self.get_paginated_response(serializer.data)
+#
+#         serializer = self.serializer_class(queryset, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ListMemberSeenMessageView(generics.ListAPIView):
