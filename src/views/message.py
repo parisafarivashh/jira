@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
+from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_yasg import openapi
@@ -16,7 +17,7 @@ from ..serializers import SeenMessageSerializer, EditMessageSerializer, \
     MessageSerializer, MemberMessageSeenSerializer
 
 
-class MessageView(viewsets.GenericViewSet):
+class MessageView(viewsets.GenericViewSet, RetrieveModelMixin):
     serializer_class = MessageSerializer
     queryset = Message.objects.all()
 
@@ -40,20 +41,20 @@ class MessageView(viewsets.GenericViewSet):
 
     def get_permissions(self):
         if self.action == 'see':
-            self.permission_classes = [
+            permission_classes = [
                 IsAuthenticated,
                 SeenOwnMessagePermission,
                 SeenPermission
             ]
 
-        if self.action == 'edit':
-            self.permission_classes = [
+        elif self.action == 'edit':
+            permission_classes = [
                 IsAuthenticated,
                 EditOwnMessage,
             ]
         else:
-            self.permission_classes = [IsAuthenticated]
-        return self.permission_classes
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
 
 class ListAndSendMessageView(generics.ListCreateAPIView):
@@ -75,7 +76,7 @@ class ListAndSendMessageView(generics.ListCreateAPIView):
         responses={200: openapi.Response("Success response description")},
     )
     def get(self, request, *args, **kwargs):
-        room = get_object_or_404(Room, kwargs['id'])
+        room = get_object_or_404(Room, id=kwargs['id'])
         check_room_member(room, request.user)
 
         queryset = Message.objects.filter(room=room)
@@ -99,7 +100,7 @@ class ListMemberSeenMessageView(generics.ListAPIView):
         responses={200: openapi.Response("Success response description")},
     )
     def get(self, request, *args, **kwargs):
-        message = get_object_or_404(Message, kwargs['id'])
+        message = get_object_or_404(Message, id=kwargs['id'])
 
         queryset = MemberMessageSeen.objects.filter(message_id=message.id)
         queryset = self.filter_queryset(queryset)

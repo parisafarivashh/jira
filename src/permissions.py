@@ -16,8 +16,8 @@ class SeenPermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         seen = MemberMessageSeen.objects.filter(
-            message_id=obj.id,
-            member_id=request.user
+            message=obj,
+            member=request.user
         )
         if seen.count() == 0:
             return True
@@ -27,7 +27,7 @@ class EditOwnMessage(BasePermission):
     message = 'Can Not Edit Message'
 
     def has_object_permission(self, request, view, obj):
-        if obj.sender_id == request.user:
+        if obj.sender == request.user:
             return True
 
 
