@@ -40,15 +40,30 @@ class EditMessageSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    # sender_name = serializers.StringRelatedField(
+    #     source='sender.title',
+    #     read_only=True
+    # )
+    sender_name = serializers.ReadOnlyField(source='sender.title')
+    # sender_name = serializers.PrimaryKeyRelatedField(source='sender.title',
+    #                                             read_only=True)
+
     class Meta:
         model = Message
-        fields = ['id', 'body', 'room', 'type', 'sender', 'is_seen']
+        fields = ['id', 'body', 'room', 'type', 'sender', 'is_seen',
+                  'sender_name']
         extra_kwargs = {
             'room': {'read_only': True},
             'type': {'read_only': True},
             'sender': {'read_only': True},
             'is_seen': {'read_only': True},
+            # 'sender_name': {'read_only': True},
         }
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['sender_email'] = instance.sender.email
+        return data
 
     def create(self, validated_data):
         user = self.context['request'].user
@@ -57,6 +72,7 @@ class MessageSerializer(serializers.ModelSerializer):
         room = get_object_or_404(Room, id=room_id)
 
         check_room_member(room, user)
+        print('okeeeeee')
 
         validated_data['room'] = room
         validated_data['type'] = 'message'

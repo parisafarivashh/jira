@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from .models import RoomMember
@@ -27,14 +28,16 @@ from .models import RoomMember
 
 
 def check_room_member(room, user):
-    try:
-        RoomMember.objects.get(
-            room_id=room,
-            member_id=user,
-        )
-    except RoomMember.DoesNotExist:
-        return Response(
-            dict(detail='You are not member of room'),
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    if RoomMember.objects.is_room_member(room_id=room.id, member_id=user.id) \
+            is False:
+        raise ValidationError(detail=dict(detail='You are not member of room'))
+
+    # try:
+    #     RoomMember.objects.get(
+    #         room_id=room,
+    #         member_id=user,
+    #     )
+    # except RoomMember.DoesNotExist:
+    #   raise ValidationError(detail=dict(detail='You are not member of room'))
+
 
