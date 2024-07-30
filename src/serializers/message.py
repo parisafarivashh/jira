@@ -52,13 +52,13 @@ class MessageSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        room_id = self.context['format'].room_id
-        print(room_id)
-        room = get_object_or_404(Room, id=self.context['format'].id)
+        kwargs = self.context['request'].parser_context['kwargs']
+        room_id = kwargs['id']
+        room = get_object_or_404(Room, id=room_id)
 
         check_room_member(room, user)
 
-        validated_data['room'] = room_id
+        validated_data['room'] = room
         validated_data['type'] = 'message'
         validated_data['sender'] = user
 
@@ -70,4 +70,11 @@ class MessageSerializer(serializers.ModelSerializer):
             user=user
         ).send_message()
         return message
+
+
+class MemberMessageSeenSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MemberMessageSeen
+        fields = ['id', 'member', 'message']
 

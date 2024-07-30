@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from langchain import schema, chat_models
 from rest_framework.exceptions import NotFound
+from rest_framework.generics import get_object_or_404
 
 from .designPattern.message import MessageFacade
 from .models import RoomMember, Room, Message
@@ -90,16 +91,16 @@ def summary_room(current_user_id, room_id=None):
         openai_result = chat(openai_messages)
         summary_message = openai_result.content
 
-    room = Room.get_room_object(room_id)
+    room = get_object_or_404(Room, room_id)
     RoomMember.objects.get_or_create(
-        room_id=room,
-        member_id=user_bot
+        room=room,
+        member=user_bot
     )
     message = Message(
         type='message',
-        sender_id=user_bot,
+        sender=user_bot,
         body=summary_message,
-        room_id=room,
+        room=room,
     )
     message.save()
     user = Member.objects.get(id=current_user_id)
