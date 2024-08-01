@@ -5,9 +5,10 @@ from rest_framework.permissions import IsAuthenticated
 from ..models import Assignment
 from ..permissions import EditOwnAssignment
 from ..serializers import AssignmentSerializer, AssignmentUpdateSerializer
+from analytics.mixin import ObjectViewMixin
 
 
-class AssignmentView(generics.ListCreateAPIView):
+class AssignmentView(ObjectViewMixin, generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AssignmentSerializer
     lookup_field = 'id'
@@ -20,7 +21,7 @@ class AssignmentView(generics.ListCreateAPIView):
         return self.create(request, *args, **kwargs)
 
 
-class AssignmentUpdateView(generics.UpdateAPIView):
+class AssignmentUpdateView(ObjectViewMixin, generics.UpdateAPIView):
     permission_classes = [IsAuthenticated, EditOwnAssignment]
     serializer_class = AssignmentUpdateSerializer
     lookup_field = 'id'

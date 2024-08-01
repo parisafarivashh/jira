@@ -13,8 +13,10 @@ from ..models import Project
 from ..serializers import ProjectSerializer, UpdateProjectSerializer
 from jira import logger
 
+from analytics.mixin import ObjectViewMixin
 
-class CreateProjectView(ListCreateAPIView):
+
+class CreateProjectView(ListCreateAPIView, ObjectViewMixin):
     permission_classes = [IsAuthenticated]
     serializer_class = ProjectSerializer
 
@@ -36,7 +38,12 @@ class CreateProjectView(ListCreateAPIView):
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
 
-class ProjectView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin):
+class ProjectView(
+    ObjectViewMixin,
+    GenericAPIView,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+):
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
 

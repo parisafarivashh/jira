@@ -5,9 +5,10 @@ from rest_framework.views import APIView
 
 from ..serializers import SummarySerializer
 from ..tasks import summary_room
+from analytics.mixin import ObjectViewMixin
 
 
-class RoomSummaryView(APIView):
+class RoomSummaryView(ObjectViewMixin, APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = SummarySerializer
 

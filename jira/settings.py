@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 
     'src',
     'user',
+    'analytics',
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

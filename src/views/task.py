@@ -10,8 +10,10 @@ from ..models import Task
 from ..serializers import TaskSerializer
 from jira import logger
 
+from analytics.mixin import ObjectViewMixin
 
-class TaskView(viewsets.ModelViewSet):
+
+class TaskView(ObjectViewMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
     lookup_field = 'id'
