@@ -13,10 +13,10 @@ from ..models import Project
 from ..serializers import ProjectSerializer, UpdateProjectSerializer
 from jira import logger
 
-from analytics.mixin import ObjectViewMixin
+from analytics.mixins import SignalModelMixin
 
 
-class CreateProjectView(ListCreateAPIView, ObjectViewMixin):
+class CreateProjectView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ProjectSerializer
 
@@ -39,8 +39,7 @@ class CreateProjectView(ListCreateAPIView, ObjectViewMixin):
 
 
 class ProjectView(
-    ObjectViewMixin,
-    GenericAPIView,
+    SignalModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
 ):

@@ -15,10 +15,10 @@ from ..permissions import SeenOwnMessagePermission, SeenPermission, \
     EditOwnMessage
 from ..serializers import SeenMessageSerializer, EditMessageSerializer, \
     MessageSerializer, MemberMessageSeenSerializer
-from analytics.mixin import ObjectViewMixin
+from analytics.mixins import SignalModelMixin
 
 
-class MessageView(ObjectViewMixin, viewsets.GenericViewSet, RetrieveModelMixin):
+class MessageView(viewsets.GenericViewSet, RetrieveModelMixin):
     serializer_class = MessageSerializer
     queryset = Message.objects.all()
 
@@ -58,7 +58,7 @@ class MessageView(ObjectViewMixin, viewsets.GenericViewSet, RetrieveModelMixin):
         return [permission() for permission in permission_classes]
 
 
-class ListAndSendMessageView(ObjectViewMixin, generics.ListCreateAPIView):
+class ListAndSendMessageView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MessageSerializer
     filter_backends = [DjangoFilterBackend]
@@ -92,7 +92,7 @@ class ListAndSendMessageView(ObjectViewMixin, generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ListMemberSeenMessageView(ObjectViewMixin, generics.ListAPIView):
+class ListMemberSeenMessageView(SignalModelMixin, generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MemberMessageSeenSerializer
 

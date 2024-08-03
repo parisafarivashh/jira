@@ -30,7 +30,7 @@ class ObjectViewed(models.Model):
 
 
 @receiver(signal=object_view_signal)
-def object_viewed_receiver(sender, instance, request, user,*args, **kwargs):
+def object_viewed_receiver(sender, instance, request, user, *args, **kwargs):
     print(instance)
     c_type = ContentType.objects.get_for_model(sender)
 
