@@ -14,6 +14,8 @@
      - [x] messageMemberSeen
      - [x] task
      - [x] assignment
+     - [x] GenericForeignKey 
+     - [x] custom signal
 
 - [x] -----------------------------------------------------------------------------------------
 

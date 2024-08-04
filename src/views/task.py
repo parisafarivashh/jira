@@ -1,7 +1,9 @@
 import traceback
 
 import ujson
+from django.db import transaction
 from django.db.models import Q
+from django.http import Http404
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,8 +12,10 @@ from ..models import Task
 from ..serializers import TaskSerializer
 from jira import logger
 
+from analytics.mixins import SignalModelViewSet
 
-class TaskView(viewsets.ModelViewSet):
+
+class TaskView(SignalModelViewSet, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
     lookup_field = 'id'
@@ -21,7 +25,7 @@ class TaskView(viewsets.ModelViewSet):
             .filter(
                 Q(manager=self.request.user) |
                 Q(created_by=self.request.user)
-            ).all()
+            )
         return tasks
 
     def perform_create(self, serializer):
@@ -30,7 +34,7 @@ class TaskView(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         return super().update(request, partial=True)
 
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         try:
             self.get_object().delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
