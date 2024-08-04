@@ -78,7 +78,7 @@ REST_FRAMEWORK = {
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -90,6 +90,7 @@ TEMPLATES = [
         },
     },
 ]
+TIMESCALE_DB_BACKEND_BASE = "django.contrib.gis.db.backends.postgis"
 
 WSGI_APPLICATION = 'jira.wsgi.application'
 

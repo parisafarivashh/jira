@@ -1,0 +1,28 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+  <div class="app-analytics module">
+    <h1>User Requests Per Day</h1>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Minute</th>
+          <th>User ID</th>
+          <th>Request Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in results %}
+        <tr>
+          <td>{{ result.minute}}</td>
+          <td>{{ result.user_id }}</td>
+          <td>{{ result.request_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
+

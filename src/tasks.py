@@ -1,7 +1,9 @@
 import environ
+from celery import shared_task
 from django.contrib.auth import get_user_model
 
 from django.db import transaction
+from django.apps import apps
 from langchain import schema, chat_models
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import get_object_or_404
@@ -9,7 +11,6 @@ from rest_framework.generics import get_object_or_404
 from .designPattern.message import MessageFacade
 from .models import RoomMember, Room, Message
 
-from jira import celery_app
 from jira.tasks import MyTask
 
 
@@ -18,7 +19,7 @@ environ.Env.read_env()
 Member = get_user_model()
 
 
-@celery_app.task(
+@shared_task(
     base=MyTask,
     autoretry_for=(Exception,),
     name='Create_room_member',
@@ -51,14 +52,14 @@ def create_room_member(
         raise NotFound()
 
 
-@celery_app.task(
+@shared_task(
     base=MyTask,
     name='Summary_room',
 )
 @transaction.atomic
 def summary_room(current_user_id, room_id=None):
     messages = Message.objects.filter(room_id=room_id) \
-                .values_list('body', flat=True)
+        .values_list('body', flat=True)
 
     summary_message = 'No messages for summary'
     user_bot, created = Member.objects.get_or_create(

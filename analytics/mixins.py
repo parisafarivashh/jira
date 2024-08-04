@@ -9,6 +9,7 @@ class SignalModelMixin(GenericAPIView):
 
     @transaction.atomic()
     def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
         if request.method in ['GET', 'PATCH', 'PUT']:
             instance = self.get_object()
             object_view_signal.send(
@@ -17,7 +18,7 @@ class SignalModelMixin(GenericAPIView):
                 request=request,
                 user=request.user,
             )
-        return super().dispatch(request, *args, **kwargs)
+        return response
 
 
 class SignalModelViewSet(GenericViewSet):

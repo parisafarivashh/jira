@@ -3,6 +3,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.dispatch import receiver
+from timescale.db.models.fields import TimescaleDateTimeField
+from timescale.db.models.models import TimescaleModel
 
 from .signals import object_view_signal
 from .utils import get_client_ip
@@ -12,19 +14,22 @@ from .utils import get_client_ip
 User = get_user_model()
 
 
-class ObjectViewed(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+class ObjectViewed(TimescaleModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,
+                             null=True, db_index=False)
     ip_address = models.CharField(max_length=120, blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, db_index=False)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
-    timestamp = models.DateTimeField(auto_now_add=True)
+    time = TimescaleDateTimeField(interval="1 day", auto_now_add=True)
+
 
     def __str__(self):
-        return f' {self.content_object} viewed {self.timestamp}'
+        return f' {self.content_object} viewed {self.time}'
 
     class Meta:
-        ordering = ['-timestamp']
+        ordering = ['-time']
+        indexes = [models.Index(fields=['id', 'time'], name='id_time_idx')]
         verbose_name = 'Object Viewed'
         verbose_name_plural = 'Objects Viewed'
 

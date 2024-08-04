@@ -85,3 +85,24 @@ class Migration(migrations.Migration):
 
     ]
  ```
+
+- [x] --------------------------------------------------------------------------------------------
+
+
+ - [x] TruncDay
+    
+    ```commandline
+    TruncDay is a database function provided by Django's ORM that truncates a 
+    date and time to the "day" level, effectively removing any more granular time information such as hours, minutes, and seconds. 
+    This is part of Django's suite of database functions that allow you to 
+    manipulate date and time fields directly in your queries, which can be very useful for grouping records by day or for performing date-based aggregation directly in the database.
+    ```
+   ```commandline
+    from django.db.models.functions import (
+             TruncDate,
+             TruncDay,
+             TruncHour,
+             TruncMinute,
+             TruncSecond,
+         )
+    ```
