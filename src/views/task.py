@@ -1,10 +1,12 @@
 import traceback
 
 import ujson
-from django.db import transaction
+from django.contrib.postgres.search import SearchVector, SearchQuery, \
+    SearchRank, TrigramSimilarity
 from django.db.models import Q
-from django.http import Http404
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -46,4 +48,42 @@ class TaskView(SignalModelViewSet, viewsets.ModelViewSet):
                 ))
             )
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, url_path='search', methods=['GET'])
+    def search(self, request, *args, **kwargs):
+        MINIMUM_MATCH_SCORE = 0.11
+        search_key = request.query_params.get('search_key')
+        if not search_key:
+            raise ValidationError(detail={'error': 'SearchKey Does Not Exist'})
+
+        # # Full-text search vectors and query
+        # vectors = SearchVector('title', 'project__title')
+        # search_qry = SearchQuery(search_key)
+        #
+        # # Full-text search query
+        # full_text_results = self.get_queryset() \
+        #     .annotate(score=SearchRank(vectors, search_qry)) \
+        #     .filter(score__gte=MINIMUM_MATCH_SCORE) \
+        #     .order_by('-score')
+        #
+        # partial_results = full_text_results
+        # # If full-text search yields no results, fall back to partial match
+        # if not full_text_results.exists():
+        #     partial_results = self.get_queryset().filter(
+        #         Q(title__icontains=search_key) |
+        #         Q(project__title__icontains=search_key)
+        #     )
+
+        query = self.get_queryset()\
+            .annotate(
+                similarity=TrigramSimilarity('title', search_key) +
+                TrigramSimilarity('project__title', search_key)
+            ) \
+            .filter(similarity__gte=MINIMUM_MATCH_SCORE) \
+            .order_by('-similarity') \
+            .all()
+
+        serializer = self.serializer_class(query, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
 

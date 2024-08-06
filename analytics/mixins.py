@@ -25,6 +25,7 @@ class SignalModelViewSet(GenericViewSet):
 
     @transaction.atomic()
     def dispatch(self, request, *args, **kwargs):
+        print(request.method)
         if request.method in ['PUT', 'PATCH']:
             instance = self.get_object()
             object_view_signal.send(

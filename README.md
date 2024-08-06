@@ -6,16 +6,8 @@
    
 - 
    - models:
-     - [x] member --> used BaseUserManager 
-     - [x] project  
-     - [x] room
-     - [x] room-member
-     - [x] message
-     - [x] messageMemberSeen
-     - [x] task
-     - [x] assignment
-     - [x] GenericForeignKey 
-     - [x] custom signal
+     - [x] member --> used BaseUserManager , project , room , room-member, 
+       message, messageMemberSeen, task, assignment, GenericForeignKey, custom signal
 
 - [x] -----------------------------------------------------------------------------------------
 
@@ -38,6 +30,7 @@
    
   - [x] create/list/update tasks
   - [x] create/list/update assignment
+  - [x] use TrigramSimilarity/SearchRank/SearchVector for search
 
  
  - [x] Implemented celery-task    

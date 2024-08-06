@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'drf_yasg',
     'debug_toolbar',
+    'django.contrib.postgres',
 
     'src',
     'user',
