@@ -1,8 +1,7 @@
 import traceback
 
 import ujson
-from django.contrib.postgres.search import SearchVector, SearchQuery, \
-    SearchRank, TrigramSimilarity
+from django.contrib.postgres.search import TrigramSimilarity
 from django.db.models import Q
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -16,11 +15,18 @@ from jira import logger
 
 from analytics.mixins import SignalModelViewSet
 
+from ..serializers.task import TaskListSerializer
+
 
 class TaskView(SignalModelViewSet, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
     lookup_field = 'id'
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            self.serializer_class = TaskListSerializer
+        return self.serializer_class
 
     def get_queryset(self):
         tasks = Task.objects \
@@ -85,5 +91,4 @@ class TaskView(SignalModelViewSet, viewsets.ModelViewSet):
 
         serializer = self.serializer_class(query, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
-
 

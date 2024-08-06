@@ -55,3 +55,33 @@ class TaskSerializer(serializers.ModelSerializer):
         return super(TaskSerializer, self).create(validated_data)
 
 
+class TaskListSerializer(serializers.ModelSerializer):
+    from . import UpdateProjectSerializer
+    project = UpdateProjectSerializer(read_only=True)
+    manager_email = serializers.StringRelatedField(
+        source='manager',
+        read_only=True,
+    )
+    manager_title = serializers.ReadOnlyField(
+        source='manager.title',
+        read_only=True,
+    )
+
+    class Meta:
+        model = Task
+        fields = [
+            'id', 'status', 'title', 'project', 'public_room', 'private_room',
+            'manager', 'manager_email', 'manager_title', 'created_by'
+        ]
+
+    def to_representation(self, instance):
+        from . import AssignmentUpdateSerializer
+
+        data = super().to_representation(instance)
+        serializer = AssignmentUpdateSerializer(
+            instance.assignments.all(),
+            many=True
+        )
+        data['assignments'] = serializer.data
+        return data
+
