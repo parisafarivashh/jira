@@ -5,39 +5,30 @@
 
    
 - 
-   - models:
-     - [x] member --> used BaseUserManager , project , room , room-member, 
-       message, messageMemberSeen, task, assignment, GenericForeignKey, custom signal
+   - [x] models:
+     -  used CustomManager, CustomQueryset , GenericForeignKey, abstract model
 
-- [x] -----------------------------------------------------------------------------------------
+-  -----------------------------------------------------------------------------------------
 
   - [x] login/sign in --> with jwt
-  - [x] models inherits from basemodel --> baseModel is abstract model that has two filed
-  - [x] models inherits from soft_delete --> soft delete is abstract model that has removed_at filed
-  - [x] if project created --> privateRoom, publicRoom created for project --> message "created" sent to public room
-  - [x] The user could seen message --> if member is a member of room then latest-seen-message updated
-  - [x] Send message --> when sending a message to the room... previous messages are seen. 
+  - [x] used nested serializer, to_representation, PrimaryKeyRelatedField, StringRelatedField
 
-- [x] -----------------------------------------------------------------------------------------
+-  ----------------------------------------------------------------------------------------
 
-  - [x] Used extra action of ViewSets (Added Custom endpoint to seen message and edit message)
+
+  - [x] Used extra action of ViewSets (Added Custom endpoint)
   - [x] bulky-create with ignore_conflicts
   - [x] custom pagination and LimitOffsetPagination
   - [x] django_filters used to get a list of unread messages
-  - [x] list members who have seen the message 
-   
-- [x] ------------------------------------------------------------------------------------
-   
-  - [x] create/list/update tasks
-  - [x] create/list/update assignment
   - [x] use TrigramSimilarity/SearchRank/SearchVector for search
+   
+- ------------------------------------------------------------------------------------
 
- 
  - [x] Implemented celery-task    
- - [x] Used Signals post-save for updating status of the assignment
+ - [x] Used Signals post-save / Used custom signal
  - [x] API to get a summary of the room and send it as a message -> Used AI (LANGCHAIN)
 
-- [x] --------------------------------------------------------------------------------------------
+-  --------------------------------------------------------------------------------------------
  
  - [x] Used swagger for documentation
  - [x] Used django-debug-toolbar
@@ -45,9 +36,12 @@
          *) Customize Admin Site with ModelAdmin Class  
          *) Use list_select_related           
          *) List Display Custom Fields   
-         *) Search field and filter field   
-      )
- 
+         *) Search field and filter field  
+         *) Use custom action
+      
+-  --------------------------------------------------------------------------------------------
+
+ - [x] use RunPython / RunSql for dataMigration
  - [x] use SeparateDatabaseAndState in migration django 
  ``` 
 
@@ -99,3 +93,5 @@ class Migration(migrations.Migration):
              TruncSecond,
          )
     ```
+   
+-  --------------------------------------------------------------------------------------------
