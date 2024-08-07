@@ -1,20 +1,28 @@
 from rest_framework import serializers
 
+from user.models import Member
+from user.serializers import MemberDetailsSerializer
+from .room import SummarySerializer
 from ..models import Project, Message, Room
 from ..tasks import create_room_member
 
 
 class ProjectSerializer(serializers.ModelSerializer):
+    manager = MemberDetailsSerializer(read_only=True)
+    created_by = MemberDetailsSerializer(read_only=True)
+    private_room = SummarySerializer(read_only=True)
+    public_room = SummarySerializer(read_only=True)
+    manager_id = serializers.PrimaryKeyRelatedField(
+        queryset=Member.objects.all(),
+        source='member',
+        write_only=True,
+        required=True,
+    )
 
     class Meta:
         model = Project
-        fields = ['id', 'title', 'description', 'manager', 'status',
-                  'public_room', 'private_room', 'created_by']
-        extra_kwargs = {
-            'public_room': {'read_only': True},
-            'private_room': {'read_only': True},
-            'created_by': {'read_only': True}
-        }
+        fields = ['id', 'title', 'description', 'manager_id', 'manager',
+                  'status', 'public_room', 'private_room', 'created_by']
 
     def create(self, validated_data):
         user = self.context['request'].user

@@ -4,6 +4,12 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Member
 
 
+class MemberDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ['id', 'title', 'email', 'phone']
+
+
 class MemberRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member

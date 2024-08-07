@@ -2,6 +2,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
+from .room import SummarySerializer
 from ..designPattern.message import MessageFacade
 from ..helpers import check_room_member
 from ..models import Message, MemberMessageSeen, RoomMember, Room
@@ -44,6 +45,7 @@ class MessageSerializer(serializers.ModelSerializer):
     #     source='sender.title',
     #     read_only=True
     # )
+    room = SummarySerializer(read_only=True)
     sender_name = serializers.ReadOnlyField(source='sender.title')
     # sender_name = serializers.PrimaryKeyRelatedField(source='sender.title',
     #                                             read_only=True)
@@ -53,7 +55,6 @@ class MessageSerializer(serializers.ModelSerializer):
         fields = ['id', 'body', 'room', 'type', 'sender', 'is_seen',
                   'sender_name']
         extra_kwargs = {
-            'room': {'read_only': True},
             'type': {'read_only': True},
             'sender': {'read_only': True},
             'is_seen': {'read_only': True},
