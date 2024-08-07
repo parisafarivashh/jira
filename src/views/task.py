@@ -9,6 +9,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from jira.paginations import LargeResultPagination
 from ..models import Task
 from ..serializers import TaskSerializer
 from jira import logger
@@ -21,6 +22,7 @@ from ..serializers.task import TaskListSerializer
 class TaskView(SignalModelViewSet, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
+    pagination_class = LargeResultPagination
     lookup_field = 'id'
 
     def get_serializer_class(self):
