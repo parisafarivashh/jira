@@ -2,6 +2,7 @@ import traceback
 
 import ujson
 from django.contrib.postgres.search import TrigramSimilarity
+from django.core.paginator import Paginator
 from django.db.models import Q
 from rest_framework import viewsets, status
 from rest_framework.decorators import action

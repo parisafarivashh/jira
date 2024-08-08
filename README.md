@@ -19,6 +19,7 @@
   - [x] Used extra action of ViewSets (Added Custom endpoint)
   - [x] bulky-create with ignore_conflicts
   - [x] custom pagination and LimitOffsetPagination
+  - [x] DEFAULT_THROTTLE_CLASSES and custom ip blocker
   - [x] django_filters used to get a list of unread messages
   - [x] use TrigramSimilarity/SearchRank/SearchVector for search
    

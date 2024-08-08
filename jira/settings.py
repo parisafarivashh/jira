@@ -60,7 +60,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'user.request_limit.RequestLimitMiddleware',
+    'user.request_limit.CaptureFailedLoginMiddleware',
 ]
+
 
 ROOT_URLCONF = 'jira.urls'
 AUTH_USER_MODEL = 'user.Member'
@@ -74,7 +77,10 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend'
     ],
+    'DEFAULT_THROTTLE_CLASSES': ['rest_framework.throttling.AnonRateThrottle'],
+    'DEFAULT_THROTTLE_RATES': {'anon': '3/minute'}
 }
+
 
 TEMPLATES = [
     {
@@ -214,5 +220,15 @@ LOGGING = {
             "style": "{",
         }
     },
+}
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://localhost:6379/",
+        "KEY_PREFIX": "imdb",
+        "TIMEOUT": 60 * 15,  # in seconds: 60 * 15 (15 minutes)
+    }
 }
 
