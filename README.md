@@ -43,6 +43,7 @@
 -  --------------------------------------------------------------------------------------------
 
  - [x] use RunPython / RunSql for dataMigration
+ - [x] TimescaleDb and tablespace to store logs in database
  - [x] use SeparateDatabaseAndState in migration django 
  ``` 
 

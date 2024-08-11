@@ -23,13 +23,13 @@ class ObjectViewed(TimescaleModel):
     content_object = GenericForeignKey('content_type', 'object_id')
     time = TimescaleDateTimeField(interval="1 day", auto_now_add=True)
 
-
     def __str__(self):
         return f' {self.content_object} viewed {self.time}'
 
     class Meta:
+        db_tablespace = 'my_tablespace'
         ordering = ['-time']
-        indexes = [models.Index(fields=['id', 'time'], name='id_time_idx')]
+        indexes = [models.Index(fields=['id', 'time'], name='id_time_idx', db_tablespace='my_tablespace')]
         verbose_name = 'Object Viewed'
         verbose_name_plural = 'Objects Viewed'
 
