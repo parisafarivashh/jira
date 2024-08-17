@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend, filters, \
+    FilterSet
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
@@ -15,7 +16,6 @@ from ..permissions import SeenOwnMessagePermission, SeenPermission, \
     EditOwnMessage
 from ..serializers import SeenMessageSerializer, EditMessageSerializer, \
     MessageSerializer, MemberMessageSeenSerializer
-from analytics.mixins import SignalModelMixin
 
 
 class MessageView(viewsets.GenericViewSet, RetrieveModelMixin):
@@ -58,10 +58,19 @@ class MessageView(viewsets.GenericViewSet, RetrieveModelMixin):
         return [permission() for permission in permission_classes]
 
 
+class MessageFilterSet(FilterSet):
+    entity_name = filters.CharFilter(field_name="metadata__entityName", lookup_expr="exact")
+
+    class Meta:
+        model = Message
+        fields = ['entity_name']
+
+
 class ListAndSendMessageView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MessageSerializer
     filter_backends = [DjangoFilterBackend]
+    filterset_class = MessageFilterSet
     filterset_fields = ['is_seen']
 
     @swagger_auto_schema(
@@ -79,8 +88,14 @@ class ListAndSendMessageView(generics.ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         room = get_object_or_404(Room, id=kwargs['id'])
         check_room_member(room, request.user)
-
         queryset = Message.objects.filter(room=room)
+
+        # if self.request.query_params is not None:
+        #     entity_name = self.request.query_params.get('entityName')
+        #     if entity_name == 'message':
+        #         queryset = queryset.filter(metadata__has_key='entityName') \
+        #             .filter(metadata__entityName='message') \
+
         queryset = self.filter_queryset(queryset)
 
         page = self.paginate_queryset(queryset)
@@ -92,7 +107,7 @@ class ListAndSendMessageView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ListMemberSeenMessageView(SignalModelMixin, generics.ListAPIView):
+class ListMemberSeenMessageView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MemberMessageSeenSerializer
 

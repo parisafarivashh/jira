@@ -19,6 +19,7 @@ class Message(BaseClassMixin, SoftDeleteMixin):
     room = models.ForeignKey(Room, on_delete=models.PROTECT, related_name='messages')
     body = models.TextField()
     is_seen = models.BooleanField(default=False)
+    metadata = models.JSONField(default=dict)
 
     class Meta:
         db_table = 'message'

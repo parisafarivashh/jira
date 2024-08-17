@@ -53,7 +53,7 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = ['id', 'body', 'room', 'type', 'sender', 'is_seen',
-                  'sender_name']
+                  'sender_name', 'metadata']
         extra_kwargs = {
             'type': {'read_only': True},
             'sender': {'read_only': True},
@@ -73,7 +73,6 @@ class MessageSerializer(serializers.ModelSerializer):
         room = get_object_or_404(Room, id=room_id)
 
         check_room_member(room, user)
-        print('okeeeeee')
 
         validated_data['room'] = room
         validated_data['type'] = 'message'
