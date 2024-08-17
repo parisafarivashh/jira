@@ -22,4 +22,4 @@ class AssignmentFilterSet(FilterSet):
 
     class Meta:
         model = Assignment
-        fields = ['time']
+        fields = '__all__'

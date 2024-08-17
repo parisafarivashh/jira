@@ -17,6 +17,7 @@
 
 
   - [x] Used extra action of ViewSets (Added Custom endpoint)
+  - [x] Used Custom filterset class for filtering
   - [x] bulky-create with ignore_conflicts
   - [x] custom pagination and LimitOffsetPagination
   - [x] DEFAULT_THROTTLE_CLASSES and custom ip blocker
