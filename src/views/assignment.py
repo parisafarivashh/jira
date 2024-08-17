@@ -1,7 +1,9 @@
 from django.db import transaction
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
+from ..filtersets import AssignmentFilterSet
 from ..models import Assignment
 from ..permissions import EditOwnAssignment
 from ..serializers import AssignmentSerializer, AssignmentUpdateSerializer
@@ -11,6 +13,8 @@ from analytics.mixins import SignalModelMixin
 class AssignmentView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AssignmentSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = AssignmentFilterSet
     lookup_field = 'id'
 
     def get_queryset(self):

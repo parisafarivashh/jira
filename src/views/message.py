@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_yasg import openapi
 
+from ..filtersets import MessageFilterSet
 from ..helpers import check_room_member
 from ..models import Message, Room, MemberMessageSeen
 from ..permissions import SeenOwnMessagePermission, SeenPermission, \
@@ -56,14 +57,6 @@ class MessageView(viewsets.GenericViewSet, RetrieveModelMixin):
         else:
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
-
-
-class MessageFilterSet(FilterSet):
-    entity_name = filters.CharFilter(field_name="metadata__entityName", lookup_expr="exact")
-
-    class Meta:
-        model = Message
-        fields = ['entity_name']
 
 
 class ListAndSendMessageView(generics.ListCreateAPIView):
