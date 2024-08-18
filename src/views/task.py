@@ -4,6 +4,7 @@ import ujson
 from django.contrib.postgres.search import TrigramSimilarity
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -11,6 +12,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from jira.paginations import LargeResultPagination
+
+from ..filtersets import TaskFilterSet
 from ..models import Task
 from ..serializers import TaskSerializer
 from jira import logger
@@ -24,6 +27,8 @@ class TaskView(SignalModelViewSet, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
     pagination_class = LargeResultPagination
+    django_filters = [DjangoFilterBackend]
+    filterset_class = TaskFilterSet
     lookup_field = 'id'
 
     def get_serializer_class(self):

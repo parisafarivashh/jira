@@ -14,7 +14,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     public_room = SummarySerializer(read_only=True)
     manager_id = serializers.PrimaryKeyRelatedField(
         queryset=Member.objects.all(),
-        source='member',
+        source='manager',
         write_only=True,
         required=True,
     )

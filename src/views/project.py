@@ -3,12 +3,14 @@ import traceback
 import ujson
 from django.db import transaction
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.generics import GenericAPIView, ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
 
+from ..filtersets import ProjectFilterSet
 from ..models import Project
 from ..serializers import ProjectSerializer, UpdateProjectSerializer
 from jira import logger
@@ -19,6 +21,8 @@ from analytics.mixins import SignalModelMixin
 class CreateProjectView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ProjectSerializer
+    django_filters = [DjangoFilterBackend]
+    filterset_class = ProjectFilterSet
 
     def get_queryset(self):
         project = Project.objects.filter(
